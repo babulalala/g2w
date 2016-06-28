@@ -2,7 +2,7 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.1
+# Version: 4.0.2
 # Date: 2016.06.23
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -52,7 +52,7 @@ here
 }
 
 get_username() {
-	who -m|cut -d ' ' -f 1
+	whoami
 }
 
 # return tag file of user
