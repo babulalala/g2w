@@ -17,11 +17,11 @@ Tested on CentOS 6.x and Cygwin.
 
 ## Usage
 ### Save path as tag
-1. In /etc/
+1. In /etc
 `sw etc`
 2. In /opt
 `sw opt`
-### Go to tag\'s path
+### Go to tag's path
 1. Go to /etc
 `gw etc`
 2. Go ot /opt
