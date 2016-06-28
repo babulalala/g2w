@@ -17,18 +17,14 @@ Tested on CentOS 6.x and Cygwin.
 
 ## Usage
 ### Save path as tag
-1. In /etc
-`sw etc`
+1. In /etc run `sw etc`
 
-2. In /opt
-`sw opt`
+2. In /opt run `sw opt`
 
 ### Go to tag's path
-1. Go to /etc
-`gw etc`
+1. Run `gw etc` anywhere to go to /etc
 
-2. Go ot /opt
-`gw opt`
+2. Run `gw opt` anywhere to go to /opt
 
 ### Show tags info
 `sw` or `gw`
