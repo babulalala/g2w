@@ -1,0 +1,3 @@
+1. can't update tag with new path -> break in check environment variable
+2. tyeahead
+3. should I hide tmp file? security reason? or move to ~/.sw??
