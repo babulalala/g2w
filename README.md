@@ -5,9 +5,6 @@ g2w is one of the most useful tool for my daily task. It is just like Linux comm
 ## About coding
 At the beginning I want this program like any Linux command, e.g. cd or pushd, but I don't have the knowledge to develope it. So I decide to use what I can, perl and shell scripting, to achieve my goal. And later I know it could be a kind of kernel space programming (very far from me), because the most programs running in sub-shell and have no effect to their parent, especially its work directory path. But luckly I found an work around to solve this issue. Now I can say it works! And if anyone knows the right way/language to develope this problem, please tell me, thank you very much!
 
-## Bugs
-N/A
-
 ## OS
 Tested on CentOS 6.x and Cygwin.
 
