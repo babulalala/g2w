@@ -2,3 +2,4 @@
 2. tyeahead
 3. should I hide tmp file? security reason? or move to ~/.sw??
 4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login)
+5. Refine README
