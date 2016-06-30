@@ -1,5 +1,8 @@
-1. can't update tag with new path -> break in check environment variable
-2. tyeahead
-3. should I hide tmp file? security reason? or move to ~/.sw??
-4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login)
-5. Refine README
+Severity: none, minor, moderate, major, critical
+1. can't update tag with new path -> break in check environment variable (major)
+2. tyeahead (none)
+3. should I hide tmp file? security reason? or move to ~/.sw?? (minor)
+4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (minor)
+5. Refine README (minor)
+6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (major)
+
