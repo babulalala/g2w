@@ -1,5 +1,6 @@
 Type: bug, feature, task, refine
 Severity: none, minor, moderate, major, critical
+--------------------------------------------------
 1. can't update tag with new path -> break in check environment variable (bug,major)
 2. tyeahead (feature,none)
 3. should I hide tmp file? security reason? or move to ~/.sw?? (refine,minor)
