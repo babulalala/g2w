@@ -1,0 +1,12 @@
+Type: bug, feature, task, refine
+Severity: none, minor, moderate, major, critical
+--------------------------------------------------
+2. tyeahead (feature,none)
+3. move .sw file to ~/.sw?? (refine,minor)
+4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
+5. Refine README (refine,minor)
+7. delete multi-tags (feature,minor)
+
+--------------------------------------------------
+1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
+6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (bug,major) - v4.0.3/2016.07.06

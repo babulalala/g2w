@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# Script: install
+# Version: 4.0.2
+#
+
+bin_folder=/usr/local/bin
+
+#
+echo -n check source ....
+echo ok
+
+#
+echo -n copy gw to $bin_folder ....
+cp -f gw $bin_folder
+
+if [ $? -eq 0 ];then
+	echo ok
+else
+	echo error
+fi
+
+#
+echo -n copy sw to $bin_folder ....
+cp -f sw $bin_folder
+
+if [ $? -eq 0 ];then
+	echo ok
+else
+	echo error
+fi
+
+#
+bash_conf=/etc/profile
+
+if [ -e $bash_conf ];then
+	entry="alias gw='source gw'"
+	grep 'source gw' $bash_conf >/dev/null 2>&1
+
+	if [ $? -eq 0 ];then	#found
+		:;	#do nothing
+	else
+		echo -n add $entry to $bash_conf ...
+		echo $entry >> $bash_conf
+		
+		if [ $? -eq 0 ];then
+			echo ok
+		else
+			echo error
+		fi
+	fi
+
+	#
+	entry="alias sw='source sw'"
+	grep 'source sw' $bash_conf >/dev/null 2>&1
+
+	if [ $? -eq 0 ];then	#found
+		:;	#do nothing
+	else
+		echo -n add $entry to $bash_conf ...
+		echo $entry >> $bash_conf
+		
+		if [ $? -eq 0 ];then
+			echo ok
+		else
+			echo error
+		fi
+	fi
+else
+	cat <<here
+Can't find file $bash_conf
+
+Please add line "alias gw='source gw'"
+Please add line "alias sw='source sw'"
+to $bash_conf manually.
+
+here
+fi
+
+
+

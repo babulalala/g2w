@@ -1,0 +1,37 @@
+g2w - Go to Work folder
+
+v3.0.0
+
+Date: 2016.05.18
+
+Note: This version is rewritten but I think it's good!
+
+The tip is use source to run script on parent and use alias to run "source g2w" command. The most important thing is there must be no exit command in g2w script, otherwise the shell will terminate itself.
+
+--------------------
+V1.2
+
+Date: 2014.11.12
+Update:
+	- add /etc/g2w.conf file
+	- add list/silance mode, default silant mode...or manual individually
+	ok - sw -> sort output alphabetically
+
+
+Installation
+    add line to ~/.bashrc
+	alias gw="source g2w"
+
+--------------------
+Log
+2014.11.12
+- start v1.2
+
+2014.11.07
+- not start work yet, ha ha ha....
+- finish sw show_tags sort function
+
+2014.11.04 - not finish but works, lack some functions but do it later.
+
+2014.11.03 - stop here, I am tired!
+
