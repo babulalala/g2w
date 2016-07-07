@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.3
-# Date: 2016.07.06
+# Version: 4.0.4
+# Date: 2016.07.07
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -19,10 +19,21 @@ get_version() {
 
 version=`get_version`
 
-tag_folder=/tmp
+tag_folder=~
+
+# return tag file of user
+get_tag_file() {
+	local username=`get_username`
+	tag_file_name=$username.$script_name
+	tag_file=$tag_folder/$tag_file_name
+
+	echo $tag_file
+}
 
 #
 show_usage() {
+	local tag_file=`get_tag_file`
+
         cat<<here
 $script_full_name, v$version
 
@@ -41,6 +52,9 @@ Options
   -h        show this help
   -V        show version
 
+Tag List
+  The tag list is $tag_file
+
 EXAMPLE
   $script_full_name
   $script_full_name a
@@ -53,15 +67,6 @@ here
 
 get_username() {
 	whoami
-}
-
-# return tag file of user
-get_tag_file() {
-	local username=`get_username`
-	tag_file_name=$username.$script_name
-	tag_file=$tag_folder/$tag_file_name
-
-	echo $tag_file
 }
 
 set_tag_in_shell() {
