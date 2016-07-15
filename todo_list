@@ -2,10 +2,49 @@ Type: bug, feature, task, refine
 Severity: none, minor, moderate, major, critical
 --------------------------------------------------
 4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
+e.g.
+you may manually add xxx in ~/.bashrc
+then exit terminal and re-enter again
+...
+
 5. Refine README (refine,minor)
+
 7. delete multi-tags (feature,minor)
-8. how to handle when 1. new shell opening. 2. set shell var name the same existing tag. 3. run sw. => conflicted tag has now shell var and prompt warning. (bug,minor)
+
+8. how to handle when 1. new shell opening. 2. set shell var name the same existing tag. 3. run sw. => conflicted tag has now shell var and prompt warning. (bug,major)
+e.g.
+		a. open terminal -> no sw shell vars now
+		b. set a=123 as shell var and a is tag existing in sw
+		c. run sw, shell vars will be created according to tags
+		d. when create a, a is alread existing in shell -> error!!
+
+another case
+		a. user bob use sw then su to root
+		b. now root wants to sw tag work, but it was used by bob -> work is alread existing in shell -> error!! Because they use the same shell environment.
+
+solution:
+		1. when sw create shell vars, when confliction appears, create only tag and warm the user.
+		e.g.
+		# sw
+		(Warning! One conflic found.)
+		run	/var/run
+		*work	/opt/work
+
+		=> *means shell var conflict and their value may be different
+
+		2. when sw tag and get conflict, user can run sw tag -t (-t for tag only) to add path to tag.
+		e.g.
+		# sw work
+		error
+		# sw work -t /# sw -t work
+		(Warning! One conflic found.)
+		run	/var/run
+		*work	/opt/work
+
+So, it meaning the user have to use this tag carefully.
+
 10. refine script install (need add more functions) (refine,minor)
+
 
 --------------------------------------------------
 Finished:
