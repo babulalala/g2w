@@ -12,6 +12,7 @@ then exit terminal and re-enter again
 7. delete multi-tags (feature,minor)
 
 8. how to handle when 1. new shell opening. 2. set shell var name the same existing tag. 3. run sw. => conflicted tag has now shell var and prompt warning. (bug,major)
+(should I check var content? If they are different then conflic....)
 e.g.
 		a. open terminal -> no sw shell vars now
 		b. set a=123 as shell var and a is tag existing in sw
@@ -45,6 +46,30 @@ So, it meaning the user have to use this tag carefully.
 
 10. refine script install (need add more functions) (refine,minor)
 
+11. sw can use another .sw file. (feature,minor)
+$ sw -f <.sw file>
+
+12. sw can import/mirage another .sw fiel. (feature,minor)
+case 1 for import
+$ sw -im <.sw file>
+sw will import tags from <.sw file>, your recent tag data will be deleted.
+Are you sure? [n/y]: y
+.....
+
+case 2 for mirage
+$ sw -mg <.sw file>
+sw will mirage <.sw file> to your xx.sw.
+Are you sure? [n/y]: y
+add tag1 /xxx/xxx .... ok
+add tag2 /xxx/xxx .... failed - tag already exists
+add tag3 /xxx/xxx .... failed - env var already exists <= can use flag -to (tag only) to add it
+add tag4 /xxx/xxx .... ok
+
+tag1 /xxxxx
+tag2 /xxxxx
+tag4 /xxxx
+otg1 /xxxx
+otg2 /xxx
 
 --------------------------------------------------
 Finished:
