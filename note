@@ -1,5 +1,9 @@
 g2w - Go to Work folder
+--------------------
+2016.07.19
+- Actually it must be very careful when using g2w shell variables. Sugestion is to varify content of var before using it. But wondering I found in Cygwin (don't know in CentOS) shell has auto completion functionf for variables. It prevents some mistakes like typo, very good. But g2w auto completion feature still needed especially when I found it is so effective on shell.
 
+--------------------
 v3.0.0
 
 Date: 2016.05.18
