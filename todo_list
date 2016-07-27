@@ -71,6 +71,8 @@ tag4 /xxxx
 otg1 /xxxx
 otg2 /xxx
 
+13. Can sort sw output by tag name or by path. (feature,minor)
+
 --------------------------------------------------
 Finished:
 1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
