@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Script: install
-# Version: 4.0.2
+# Version: 4.0.5
+# Date: 2016.07.27
 #
 
 bin_folder=/usr/local/bin
@@ -31,7 +32,8 @@ else
 fi
 
 #
-bash_conf=/etc/profile
+#bash_conf=/etc/profile
+bash_conf=/etc/bash.bashrc
 
 if [ -e $bash_conf ];then
 	entry="alias gw='source gw'"

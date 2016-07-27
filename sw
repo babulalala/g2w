@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.4
-# Date: 2016.07.07
+# Version: 4.0.5
+# Date: 2016.07.27
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #

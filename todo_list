@@ -73,12 +73,12 @@ otg2 /xxx
 
 13. Can sort sw output by tag name or by path. (feature,minor)
 
-14. Huston we got a problem! recently alias set in /etc/profile, but it will not affect in sub-shell, need to solve this problem. (bug,critical)
-=> need to change profile to /etc/bash.bashrc
-
 --------------------------------------------------
 Finished:
 1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
 6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (bug,major) - v4.0.3/2016.07.06
 9. like vi :version, the user can see info where is his .sw file located. (refine,none) - v4.0.4/2016.07.07
 3. move .sw file to ~/.sw?? (refine,minor) - v4.0.4/2016.07.07
+14. Huston we got a problem! recently alias set in /etc/profile, but it will not affect in sub-shell, need to solve this problem. (bug,critical)
+=> need to change profile to /etc/bash.bashrc - v4.0.5/2016.07.27
+
