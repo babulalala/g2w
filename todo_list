@@ -75,12 +75,17 @@ otg2 /xxx
 
 14. Huston we got a problem! recently alias set in /etc/profile, but it will not affect in sub-shell, need to solve this problem. (bug,critical)
 => need to change profile to /etc/bash.bashrc - v4.0.5/2016.07.27
-=> It is shxt that bash.bashrc is available for Cygwin but not CentOS, so for CentOS the right way is to write the script in /etc/profile.d/.
+=> It is shxt that bash.bashrc is available for Cygwin but not CentOS
+=> I think the right way is to write the script in /etc/profile.d/.
 So I have to modify script install
-	1. check shell (which os?)
-	2. check file existance
-	3. create g2w.sh or append alias to file
-	-> for append, check alias exists?
+#(don't need)	1. check shell (which os?)
+#(don't need)		$ uname -o
+#(don't need)		Cygwin: Cygwin
+#(don't need)		CentOS/Linux: GNU/Linux
+#(don't need)	2. check file existance
+#(don't need)	if [ -r $file ]
+	3. copy g2w.sh to /etc/profile.d/
+	4. please re-login....
 
 --------------------------------------------------
 Finished:

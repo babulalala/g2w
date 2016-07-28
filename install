@@ -1,18 +1,45 @@
 #!/bin/bash
 #
 # Script: install
-# Version: 4.0.5
-# Date: 2016.07.27
+# Version: 4.0.6
+# Date: 2016.07.28
 #
 
 bin_folder=/usr/local/bin
+login_shell_folder=/etc/profile.d
+
+set_alias() {
+	local login_script=g2w.sh
+
+	if [ -f $login_script ];then
+		echo -n "copy $login_script to $login_shell_folder ... "
+		cp $login_script $login_shell_folder
+
+		if [ $? -eq 0 ];then
+			echo ok
+		else
+			echo error
+		fi
+	else
+		echo "can't find $login_script"
+	fi
+}
+
+show_messages() {
+	cat <<here
+
+Please re-login the terminal to affect the functions.
+here
+
+}
 
 #
-echo -n check source ....
+main() {
+echo -n "check source (not finish yet) .... "
 echo ok
 
 #
-echo -n copy gw to $bin_folder ....
+echo -n "copy gw to $bin_folder .... "
 cp -f gw $bin_folder
 
 if [ $? -eq 0 ];then
@@ -31,53 +58,15 @@ else
 	echo error
 fi
 
-#
-#bash_conf=/etc/profile
-bash_conf=/etc/bash.bashrc
+	# set alias
+	set_alias
 
-if [ -e $bash_conf ];then
-	entry="alias gw='source gw'"
-	grep 'source gw' $bash_conf >/dev/null 2>&1
+	# show messasges
+	show_messages
 
-	if [ $? -eq 0 ];then	#found
-		:;	#do nothing
-	else
-		echo -n add $entry to $bash_conf ...
-		echo $entry >> $bash_conf
-		
-		if [ $? -eq 0 ];then
-			echo ok
-		else
-			echo error
-		fi
-	fi
+}
 
-	#
-	entry="alias sw='source sw'"
-	grep 'source sw' $bash_conf >/dev/null 2>&1
+# main #
+main
 
-	if [ $? -eq 0 ];then	#found
-		:;	#do nothing
-	else
-		echo -n add $entry to $bash_conf ...
-		echo $entry >> $bash_conf
-		
-		if [ $? -eq 0 ];then
-			echo ok
-		else
-			echo error
-		fi
-	fi
-else
-	cat <<here
-Can't find file $bash_conf
-
-Please add line "alias gw='source gw'"
-Please add line "alias sw='source sw'"
-to $bash_conf manually.
-
-here
-fi
-
-
-
+## End of Script ##
