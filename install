@@ -3,25 +3,35 @@
 # Script: install
 # Description: install script for g2w
 # Version: 4.0.7
+# Package Version: 4.0.7
 # Date: 2016.08.01
 #
 
 bin_folder=/usr/local/bin
+source_files="sw gw"
+
+# functions #
+check_result() {
+	local cmd=$1
+	eval $cmd
+
+	if [ $? -eq 0 ];then
+		echo ok
+	else
+		echo error
+	fi
+}
 
 set_alias_centos() {
 	local login_script_name=g2w.sh
 	local login_shell_folder=/etc/profile.d
 	local login_script=./$login_script_name
+	local cmd=
 
 	if [ -f $login_script ];then
 		echo -n "copy $login_script to $login_shell_folder ... "
-		cp $login_script $login_shell_folder
-
-		if [ $? -eq 0 ];then
-			echo ok
-		else
-			echo error
-		fi
+		cmd="cp $login_script $login_shell_folder"
+		check_result "$cmd"
 	else
 		echo "can't find $login_script"
 	fi
@@ -41,27 +51,19 @@ set_alias_cygwin() {
 		grep $cmd1 $login_script 1>/dev/null 2>&1
 		
 		if [ ! $? -eq 0 ];then
-			echo -n "add $cmd1 to $login_script"
-			echo $cmd1 >> $login_script
-			if [ $? -eq 0 ];then
-				echo ok
-			else
-				echo error
-			fi
+			echo -n "add $cmd1 to $login_script .... "
+			cmd="echo $cmd1 >> $login_script"
+			check_result "$cmd"
 		fi
 
 		grep $cmd2 $login_script 1>/dev/null 2>&1
 
 		if [ ! $? -eq 0 ];then
-			echo -n "add $cmd2 to $login_script"
-			echo $cmd2 >> $login_script
-			if [ $? -eq 0 ];then
-				echo ok
-			else
-				echo error
-			fi
-		fi
+			echo -n "add $cmd2 to $login_script .... "
+			cmd="echo $cmd2 >> $login_script"
+			check_result "$cmd"
 
+		fi
 	else
 		echo 'alias sw="source sw"' >> $login_script
 		echo 'gw="source gw"' >> $login_script
@@ -75,11 +77,11 @@ set_alias() {
 
 	echo $os
 
-	case "$os" in
-		"Cygwin") 
+	case $os in
+		Cygwin) 
 			set_alias_cygwin
 		;;
-		"GNU/Linux") set_alias_centos
+		GNU/Linux) set_alias_centos
 		;;
 		*) echo "Sorry, we don't support your system now."
 		   exit 0
@@ -95,37 +97,47 @@ here
 
 }
 
+check_source() {
+	echo -n "check source .... "
+
+	local file=
+
+	for file in $source_files
+	do
+		if [ ! -f $file ];then
+			echo lacks $file
+			exit 1
+		fi
+	done
+
+	echo ok
+
+}
+
+copy_files() {
+	echo -n "copy gw to $bin_folder .... "
+	local cmd="cp -f gw $bin_folder"
+	check_result "$cmd"
+
+	#
+	echo -n "copy sw to $bin_folder .... "
+	cmd="cp -f sw $bin_folder"
+	check_result "$cmd"
+}
+
 #
 main() {
-echo -n "check source (not finish yet) .... "
-echo ok
+	# check source files in this folder
+	check_source
 
-#
-echo -n "copy gw to $bin_folder .... "
-cp -f gw $bin_folder
-
-if [ $? -eq 0 ];then
-	echo ok
-else
-	echo error
-fi
-
-#
-echo -n copy sw to $bin_folder ....
-cp -f sw $bin_folder
-
-if [ $? -eq 0 ];then
-	echo ok
-else
-	echo error
-fi
-
+	# copy files to destinations
+	copy_files
 	# set alias
+
 	set_alias
 
 	# show messasges
 	show_messages
-
 }
 
 # main #
