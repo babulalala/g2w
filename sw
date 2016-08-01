@@ -3,7 +3,7 @@
 # Script: sw
 # Description:
 # Version: 4.0.6
-# Package Version: 4.0.7
+# Package Version: 4.0.8
 # Date: 2016.08.01
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
