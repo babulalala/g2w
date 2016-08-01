@@ -84,6 +84,8 @@ otg2 /xxx
 18. Need reload function (only once) for sw?
 E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
 
+19. Need Make file to automate the pkg creation.
+
 --------------------------------------------------
 Finished:
 
