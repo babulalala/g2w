@@ -3,6 +3,7 @@
 # Script: sw
 # Description:
 # Version: 4.0.6
+# Package Version: 4.0.7
 # Date: 2016.08.01
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -25,8 +26,8 @@ get_script_version() {
 }
 
 get_pkg_version() {
-	local version=`grep '^# Package Version:' $this_file|cut -d ' ' -f 3`
-	if [ -s $version ];then
+	local version=`grep '^# Package Version:' $this_file|cut -d ' ' -f 4`
+	if [ -z $version ];then
 		echo '-'
 	else
 		echo $version
@@ -52,9 +53,12 @@ get_tag_file() {
 #
 show_usage() {
 	local tag_file=`get_tag_file`
+	local version=`get_script_version`
+	local pkg_version=`get_pkg_version`
 
         cat<<here
 $script_full_name, v$version
+g2w package, $pkg_version
 
 Change and manage work directories
 

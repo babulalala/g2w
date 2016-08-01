@@ -1,6 +1,8 @@
 Type: bug, feature, task, refine
 Severity: none, minor, moderate, major, critical
 --------------------------------------------------
+Tasks:
+
 4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
 e.g.
 you may manually add xxx in ~/.bashrc
@@ -73,31 +75,50 @@ otg2 /xxx
 
 13. Can sort sw output by tag name or by path. (feature,minor)
 
+15. Add message/note about g2w is tested/only run on bash. (refine,minor)
+
+16. Need remove function. (feature,minor)
+
+17. Add version functions to gw. (refine,minor)
+
+18. Need reload function (only once) for sw?
+E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
+
+--------------------------------------------------
+Finished:
+
+1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
+
+6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (bug,major) - v4.0.3/2016.07.06
+
+9. like vi :version, the user can see info where is his .sw file located. (refine,none) - v4.0.4/2016.07.07
+
+3. move .sw file to ~/.sw?? (refine,minor) - v4.0.4/2016.07.07
+
 14. Huston we got a problem! recently alias set in /etc/profile, but it will not affect in sub-shell, need to solve this problem. (bug,critical)
-=> need to change profile to /etc/bash.bashrc - v4.0.5/2016.07.27
-=> It is shxt that bash.bashrc is available for Cygwin but not CentOS
-=> I think the right way is to write the script in /etc/profile.d/.
+	=> need to change profile to /etc/bash.bashrc - v4.0.5/2016.07.27
+	=> It is shxt that bash.bashrc is available for Cygwin but not CentOS
+	=> I think the right way is to write the script in /etc/profile.d/.
+
 2016.07.28
 It is shit again that the g2w.sh doesn't work for Cygwin and CentOS/sh. I am confused... Really need to test these login script...sigh....
 By the way, should I strict the usage only on bash? should be, because I only use it on bash.
 
 So I have to modify script install
-1. check shell (which os?)
-	$ uname -o
-	Cygwin: Cygwin
-	CentOS/Linux: GNU/Linux
-2. check file existance
-	if [ -r $file ]
-3. copy g2w.sh to /etc/profile.d/
-4. please re-login....
+	1. check shell (which os?)
+		$ uname -o
+		Cygwin: Cygwin
+		CentOS/Linux: GNU/Linux
+	2. check file existance
+		if [ -r $file ]
+	3. copy g2w.sh to /etc/profile.d/
+	4. please re-login....
 
-15. Add message/note about g2w is tested/only run on bash. (refine,minor)
-
-16. Need remove function. (feature,minor)
+2016.08.01
+Ok, I think I fixed this bug. - v4.0.7/2016.08.01
 
 --------------------------------------------------
-Finished:
-1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
-6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (bug,major) - v4.0.3/2016.07.06
-9. like vi :version, the user can see info where is his .sw file located. (refine,none) - v4.0.4/2016.07.07
-3. move .sw file to ~/.sw?? (refine,minor) - v4.0.4/2016.07.07
+Note:
+
+2016.08.01
+It is shit that this project seems umendlich....sigh.
