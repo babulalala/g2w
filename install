@@ -2,7 +2,7 @@
 #
 # Script: install
 # Description: install script for g2w
-# Version: 4.0.7
+# Version: 4.0.8
 # Package Version: 4.0.7
 # Date: 2016.08.01
 #
@@ -42,25 +42,25 @@ set_alias_cygwin() {
 	local login_shell_folder=/etc
 	local login_script=$login_shell_folder/$login_script_name
 
-	local cmd1='alias sw="source sw"'
-	local cmd2='alias gw="source gw"'
+	local cmd1="alias sw='source sw'"
+	local cmd2="alias gw='source gw'"
 
 	local cmd=
 
 	if [ -r $login_script ];then
-		grep $cmd1 $login_script 1>/dev/null 2>&1
+		grep "$cmd1" $login_script >/dev/null 2>&1
 		
 		if [ ! $? -eq 0 ];then
 			echo -n "add $cmd1 to $login_script .... "
-			cmd="echo $cmd1 >> $login_script"
+			cmd="echo \"$cmd1\" >> $login_script"
 			check_result "$cmd"
 		fi
 
-		grep $cmd2 $login_script 1>/dev/null 2>&1
+		grep "$cmd2" $login_script >/dev/null 2>&1
 
 		if [ ! $? -eq 0 ];then
 			echo -n "add $cmd2 to $login_script .... "
-			cmd="echo $cmd2 >> $login_script"
+			cmd="echo \"$cmd2\" >> $login_script"
 			check_result "$cmd"
 
 		fi
