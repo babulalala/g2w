@@ -93,6 +93,8 @@ So I have to modify script install
 
 15. Add message/note about g2w is tested/only run on bash. (refine,minor)
 
+16. Need remove function. (feature,minor)
+
 --------------------------------------------------
 Finished:
 1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06

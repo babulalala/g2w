@@ -7,10 +7,11 @@
 #
 
 bin_folder=/usr/local/bin
-login_shell_folder=/etc/profile.d
 
-set_alias_linux() {
-	local login_script=g2w.sh
+set_alias_centos() {
+	local login_script_name=g2w.sh
+	local login_shell_folder=/etc/profile.d
+	local login_script=./$login_script_name
 
 	if [ -f $login_script ];then
 		echo -n "copy $login_script to $login_shell_folder ... "
@@ -27,29 +28,58 @@ set_alias_linux() {
 }
 
 set_alias_cygwin() {
-	local login_script=g2w.sh
+	local login_script_name=bash.bashrc
+	local login_shell_folder=/etc
+	local login_script=$login_shell_folder/$login_script_name
 
-	if [ -f $login_script ];then
-		echo -n "copy $login_script to $login_shell_folder ... "
-		cp $login_script $login_shell_folder
+	local cmd1='alias sw="source sw"'
+	local cmd2='alias gw="source gw"'
 
-		if [ $? -eq 0 ];then
-			echo ok
-		else
-			echo error
+	local cmd=
+
+	if [ -r $login_script ];then
+		grep $cmd1 $login_script 1>/dev/null 2>&1
+		
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd1 to $login_script"
+			echo $cmd1 >> $login_script
+			if [ $? -eq 0 ];then
+				echo ok
+			else
+				echo error
+			fi
 		fi
+
+		grep $cmd2 $login_script 1>/dev/null 2>&1
+
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd2 to $login_script"
+			echo $cmd2 >> $login_script
+			if [ $? -eq 0 ];then
+				echo ok
+			else
+				echo error
+			fi
+		fi
+
 	else
-		echo "can't find $login_script"
+		echo 'alias sw="source sw"' >> $login_script
+		echo 'gw="source gw"' >> $login_script
 	fi
 }
 
 set_alias() {
+	echo -n "checking OS .... "
+
 	local os=`uname -o`
 
-	case $os in
-		"Cygwin") set_alias_cygwin
+	echo $os
+
+	case "$os" in
+		"Cygwin") 
+			set_alias_cygwin
 		;;
-		"GUN/Linux") set_alias_linux
+		"GNU/Linux") set_alias_centos
 		;;
 		*) echo "Sorry, we don't support your system now."
 		   exit 0
