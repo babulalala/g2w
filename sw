@@ -2,24 +2,43 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.5
-# Date: 2016.07.27
+# Version: 4.0.6
+# Date: 2016.08.01
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
 
+#don't modify here, because of alias the $0 is /bin/bash
 script_name=sw
 script_full_name=sw
 this_file=/usr/local/bin/$script_full_name
+tag_folder=~
 
-get_version() {
-        local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
-        echo $version
+# functions #
+get_script_version() {
+	local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
+	if [ -z $version ];then
+		echo '-'
+	else
+		echo $version
+	fi
 }
 
-version=`get_version`
+get_pkg_version() {
+	local version=`grep '^# Package Version:' $this_file|cut -d ' ' -f 3`
+	if [ -s $version ];then
+		echo '-'
+	else
+		echo $version
+	fi
+}
 
-tag_folder=~
+show_version() {
+	local pkg_v=`get_pkg_version`
+	local script_v=`get_script_version`
+
+	echo "$pkg_v/$script_v"
+}
 
 # return tag file of user
 get_tag_file() {
@@ -261,10 +280,6 @@ clean_list() {
 	unset_shell_variables
 	local list=`get_tag_file`
 	>$list
-}
-
-show_version() {
-	echo $version
 }
 
 main() {

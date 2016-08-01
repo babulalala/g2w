@@ -127,6 +127,8 @@ copy_files() {
 
 #
 main() {
+	cd `dirname $0`
+
 	# check source files in this folder
 	check_source
 
