@@ -77,15 +77,16 @@ otg2 /xxx
 => need to change profile to /etc/bash.bashrc - v4.0.5/2016.07.27
 => It is shxt that bash.bashrc is available for Cygwin but not CentOS
 => I think the right way is to write the script in /etc/profile.d/.
+=> It is still shxt that profile.d doesn't work for Cygwin!!
 So I have to modify script install
-#(don't need)	1. check shell (which os?)
-#(don't need)		$ uname -o
-#(don't need)		Cygwin: Cygwin
-#(don't need)		CentOS/Linux: GNU/Linux
-#(don't need)	2. check file existance
-#(don't need)	if [ -r $file ]
-	3. copy g2w.sh to /etc/profile.d/
-	4. please re-login....
+1. check shell (which os?)
+	$ uname -o
+	Cygwin: Cygwin
+	CentOS/Linux: GNU/Linux
+2. check file existance
+	if [ -r $file ]
+3. copy g2w.sh to /etc/profile.d/
+4. please re-login....
 
 --------------------------------------------------
 Finished:
