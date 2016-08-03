@@ -1,4 +1,4 @@
-Type: bug, feature, task, refine
+Type: bug, feature, task, refine, deleted
 Severity: none, minor, moderate, major, critical
 --------------------------------------------------
 Tasks:
@@ -48,10 +48,7 @@ So, it meaning the user have to use this tag carefully.
 
 10. refine script install (need add more functions) (refine,minor)
 
-11. sw can use another .sw file. (feature,minor)
-$ sw -f <.sw file>
-
-12. sw can import/mirage another .sw fiel. (feature,minor)
+12. sw can import/mirage another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
 case 1 for import
 $ sw -im <.sw file>
 sw will import tags from <.sw file>, your recent tag data will be deleted.
@@ -86,6 +83,23 @@ E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag)
 
 19. Need Make file to automate the pkg creation.
 
+20. Refine sw output, may restrict the char number of tag. (refine,minor)
+Use printf instead of 2 tabs
+e.g.
+bobchang        /cygdrive/c/Users/bobchang
+cnt65   /cygdrive/f/l3/lab/CentOS_65
+=>
+bchang		/cygdrive/c/Users/bobchang
+cnt65		/cygdrive/f/l3/lab/CentOS_65
+
+21. Can tag name include -, just not in the begining? (refine,minor)
+
+22. sw output may add new column "note". (feature,minor)
+e.g.
+# sw foo -nt "folder saves pics"
+foo		/somewhere			"folder saves pics"
+
+
 --------------------------------------------------
 Finished:
 
@@ -118,6 +132,13 @@ So I have to modify script install
 
 2016.08.01
 Ok, I think I fixed this bug. - v4.0.7/2016.08.01
+
+--------------------------------------------------
+Deleted:
+
+11. sw can use another .sw file. (deleted,none)
+$ sw -f <.sw file>
+2016.08.03 - seems it is not neccessary, because gw still read default .sw file, import is more useable.
 
 --------------------------------------------------
 Note:
