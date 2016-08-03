@@ -78,7 +78,7 @@ otg2 /xxx
 
 17. Add version functions to gw. (refine,minor)
 
-18. Need reload function (only once) for sw?
+18. Need reload function (only once) for sw. (feature,major)
 E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
 
 19. Need Make file to automate the pkg creation.
