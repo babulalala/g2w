@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.6
-# Package Version: 4.0.8
-# Date: 2016.08.01
+# Version: 4.0.7
+# Package Version: 4.0.9
+# Date: 2016.08.04
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -67,12 +67,13 @@ Usage: $script_full_name [-c|-d <tag>|-gf|-h|-V]
 tag	    composed of [a-zA-Z0-9_]
 
 Options
-  N/A	    show tags info
+  N/A	    show tags info sorted by tag name
   tag	    save tag with current work directory path
   -c        clean (delete) all tags in path list
   -d tag    delete tag in path list
   -gf	    get tag file name
   -h        show this help
+  -r	    show tags info sorted by path
   -V        show version
 
 Tag List
@@ -286,6 +287,22 @@ clean_list() {
 	>$list
 }
 
+show_list_by_path() {
+	local list=`get_tag_file`
+
+	if [ ! -e $list ];then
+		>$list
+		return 0
+	fi
+
+	#debug
+	#cat $list
+
+	perl -pe 's/,/\t/' $list|sort -k 2,2
+
+	set_shell_variables
+}
+
 main() {
 	if [ $# -eq 0 ];then
 		show_list
@@ -300,6 +317,8 @@ main() {
 		-gf) get_tag_file
 		;;
 		-h) show_usage
+		;;
+		-r) show_list_by_path
 		;;
 		-V) show_version
 		;;
