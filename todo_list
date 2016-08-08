@@ -1,6 +1,7 @@
 Type: bug, feature, task, refine, deleted
 Severity: none, minor, moderate, major, critical
 --------------------------------------------------
+{{{
 Tasks:
 
 4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
@@ -99,7 +100,25 @@ e.g.
 # sw foo -nt "folder saves pics"
 foo		/somewhere			"folder saves pics"
 
+22. sw output only the path under dedicated tag. (feature,minor)
+e.g.
+$ sw -r
+opt     /opt
+tools   /opt/tools
+ckpkv   /opt/tools/ckpkv/work
+work    /opt/tools/g2w/work
+tmp     /tmp
+var     /var
 
+$ sw -r -u opt
+or just easy output by path, because when you use this function, you focuse on path.
+$ sw -u opt
+opt     /opt
+tools   /opt/tools
+ckpkv   /opt/tools/ckpkv/work
+work    /opt/tools/g2w/work
+
+}}}
 --------------------------------------------------
 Finished:
 
@@ -142,6 +161,9 @@ $ sw -f <.sw file>
 
 --------------------------------------------------
 Note:
+
+2016.08.08
+I know, I need to arrange this todo list....when I'm free, sigh.
 
 2016.08.01
 It is shit that this project seems unendlich....sigh.
