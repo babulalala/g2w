@@ -1,20 +1,17 @@
 Type: bug, feature, task, refine, deleted
 Severity: none, minor, moderate, major, critical
---------------------------------------------------
-{{{
-Tasks:
 
-4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
-e.g.
-you may manually add xxx in ~/.bashrc
-then exit terminal and re-enter again
-...
+Tasks:
+{{{ --------------------------------------------------
 
 5. Refine README (refine,minor)
 
 7. delete multi-tags (feature,minor)
 
-8. how to handle when 1. new shell opening. 2. set shell var name the same existing tag. 3. run sw. => conflicted tag has now shell var and prompt warning. (bug,major)
+8. Handle tag vs shell var conflict (bug,major)
+	1. when new shell opening.
+	2. set shell var name the same existing tag.
+	3. run sw. => conflicted tag has now shell var and prompt warning. 
 (should I check var content? If they are different then conflic....)
 e.g.
 		a. open terminal -> no sw shell vars now
@@ -50,79 +47,93 @@ So, it meaning the user have to use this tag carefully.
 10. refine script install (need add more functions) (refine,minor)
 
 12. sw can import/mirage another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
-case 1 for import
-$ sw -im <.sw file>
-sw will import tags from <.sw file>, your recent tag data will be deleted.
-Are you sure? [n/y]: y
-.....
+	case 1 for import
+	$ sw -im <.sw file>
+	sw will import tags from <.sw file>, your recent tag data will be deleted.
+	Are you sure? [n/y]: y
+	.....
 
-case 2 for mirage
-$ sw -mg <.sw file>
-sw will mirage <.sw file> to your xx.sw.
-Are you sure? [n/y]: y
-add tag1 /xxx/xxx .... ok
-add tag2 /xxx/xxx .... failed - tag already exists
-add tag3 /xxx/xxx .... failed - env var already exists <= can use flag -to (tag only) to add it
-add tag4 /xxx/xxx .... ok
+	case 2 for mirage
+	$ sw -mg <.sw file>
+	sw will mirage <.sw file> to your xx.sw.
+	Are you sure? [n/y]: y
+	add tag1 /xxx/xxx .... ok
+	add tag2 /xxx/xxx .... failed - tag already exists
+	add tag3 /xxx/xxx .... failed - env var already exists <= can use flag -to (tag only) to add it
+	add tag4 /xxx/xxx .... ok
 
-tag1 /xxxxx
-tag2 /xxxxx
-tag4 /xxxx
-otg1 /xxxx
-otg2 /xxx
-
-13. Can sort sw output by tag name or by path. (feature,minor)
+	tag1 /xxxxx
+	tag2 /xxxxx
+	tag4 /xxxx
+	otg1 /xxxx
+	otg2 /xxx
 
 15. Add message/note about g2w is tested/only run on bash. (refine,minor)
 
 16. Need remove function. (feature,minor)
+remove what? forget....
 
 17. Add version functions to gw. (refine,minor)
 
 18. Need reload function (only once) for sw. (feature,major)
-E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
+	E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
 
-19. Need Make file to automate the pkg creation.
-
-20. Refine sw output, may restrict the char number of tag. (refine,minor)
-Use printf instead of 2 tabs
-e.g.
-bobchang        /cygdrive/c/Users/bobchang
-cnt65   /cygdrive/f/l3/lab/CentOS_65
-=>
-bchang		/cygdrive/c/Users/bobchang
-cnt65		/cygdrive/f/l3/lab/CentOS_65
-
-21. Can tag name include -, just not in the begining? (refine,minor)
+19. Need Make file to automate the pkg creation. (task,minor)
 
 22. sw output may add new column "note". (feature,minor)
-e.g.
-# sw foo -nt "folder saves pics"
-foo		/somewhere			"folder saves pics"
+	e.g.
+	# sw foo -nt "folder saves pics"
+	foo		/somewhere			"folder saves pics"
+	(I am not sure if there must be 2 kinds of output with/without note column? First try with note to test if it's too noisy.)
 
 22. sw output only the path under dedicated tag. (feature,minor)
-e.g.
-$ sw -r
-opt     /opt
-tools   /opt/tools
-ckpkv   /opt/tools/ckpkv/work
-work    /opt/tools/g2w/work
-tmp     /tmp
-var     /var
+	e.g.
+	$ sw -r
+	opt     /opt
+	tools   /opt/tools
+	ckpkv   /opt/tools/ckpkv/work
+	work    /opt/tools/g2w/work
+	tmp     /tmp
+	var     /var
 
-$ sw -r -u opt
-or just easy output by path, because when you use this function, you focuse on path.
-$ sw -u opt
-opt     /opt
-tools   /opt/tools
-ckpkv   /opt/tools/ckpkv/work
-work    /opt/tools/g2w/work
+	$ sw -r -u opt
+	or just easy output by path, because when you use this function, you focuse on path.
+	$ sw -u opt
+	opt     /opt
+	tools   /opt/tools
+	ckpkv   /opt/tools/ckpkv/work
+	work    /opt/tools/g2w/work
 
-}}}
---------------------------------------------------
+}}} --------------------------------------------------
+
 Finished:
+{{{ --------------------------------------------------
 
-1. can't update tag with new path -> break in check environment variable (bug,major) - v4.0.3/2016.07.06
+20. Refine sw output, may restrict the char number of tag. (refine,minor)
+	Use printf instead of 2 tabs
+	e.g.
+	bobchang        /cygdrive/c/Users/bobchang
+	cnt65   /cygdrive/f/l3/lab/CentOS_65
+	=>
+	bchang		/cygdrive/c/Users/bobchang
+	cnt65		/cygdrive/f/l3/lab/CentOS_65
+- v4.0.10/2016.08.09
+
+21. Can tag name include -, just not in the begining? (refine,minor)
+	No, because - is invalid for shell var naming rule.
+
+13. Can sort sw output by tag name or by path. (feature,minor)
+- v4.0.9/2016.08.09
+
+4. Info for first installation, recent terminal needs to source ~/.bashrc or log out then log in....(effect by next login) (refine,minor)
+	e.g.
+	you may manually add xxx in ~/.bashrc
+	then exit terminal and re-enter again
+	...
+- v4.0.9/2016.08.09
+
+1. can't update tag with new path -> break in check environment variable (bug,major)
+- v4.0.3/2016.07.06
 
 6. tag name include dash e.g. 'a-a' results error "tag name already exists in shell" (bug,major) - v4.0.3/2016.07.06
 
@@ -152,18 +163,23 @@ So I have to modify script install
 2016.08.01
 Ok, I think I fixed this bug. - v4.0.7/2016.08.01
 
---------------------------------------------------
+}}} --------------------------------------------------
+
 Deleted:
+{{{ --------------------------------------------------
 
 11. sw can use another .sw file. (deleted,none)
 $ sw -f <.sw file>
 2016.08.03 - seems it is not neccessary, because gw still read default .sw file, import is more useable.
 
---------------------------------------------------
-Note:
+}}} --------------------------------------------------
 
+Note:
+{{{ --------------------------------------------------
 2016.08.08
 I know, I need to arrange this todo list....when I'm free, sigh.
 
 2016.08.01
 It is shit that this project seems unendlich....sigh.
+
+}}} --------------------------------------------------

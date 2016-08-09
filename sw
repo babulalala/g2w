@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.7
-# Package Version: 4.0.9
-# Date: 2016.08.04
+# Version: 4.0.8
+# Package Version: 4.0.10
+# Date: 2016.08.09
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -64,7 +64,8 @@ Change and manage work directories
 
 Usage: $script_full_name [-c|-d <tag>|-gf|-h|-V]
 
-tag	    composed of [a-zA-Z0-9_]
+tag	    composed of a-z, A-Z, 0-9 or _, can't start with digit,
+            at lest 1 to max 20 characters
 
 Options
   N/A	    show tags info sorted by tag name
@@ -119,7 +120,7 @@ set_shell_variables() {
 }
 
 #
-show_list() {
+_show_list() {
 	local list=`get_tag_file`
 
 	if [ ! -e $list ];then
@@ -128,12 +129,20 @@ show_list() {
 	fi
 
 	#debug
-	#cat $list
+	#cat -A $list
 
-	perl -pe 's/,/\t/' $list|sort
+	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list
 
+}
+
+show_list() {
+	_show_list|sort
 	set_shell_variables
-	
+}
+
+show_list_by_path() {
+	_show_list|sort -k 2,2
+	set_shell_variables
 }
 
 unset_tag_in_shell() {
@@ -172,12 +181,14 @@ _delete_tag() {
 check_tag_format() {
 	local tag_name=$1
 
-	#naming rule, only [a-zA-Z0-9_]
-	#
-	# this don't work if tag name equals to perl argument e.g. -v
-	#local name_ok=`perl -w -e '$name=shift;if($name =~ /^[a-zA-Z0-9_]+$/){print 0;}else{print 1}' $tag_name 2>/dev/null`
-	# this works
-	local cmd="perl -w -e '\$name=\"$tag_name\";if(\$name =~ /^[a-zA-Z0-9_]+\$/){print 0;}else{print 1}' 2>/dev/null"
+	#The naming rule is the same as shell environment variable 
+	#naming rule, only [a-zA-Z0-9_], min 1, max 20, 
+	#do not begin with a digit.
+	#The reason why can't we use - in tag name because:
+	#1. It's invalid of shell variable naming rule.
+	#2. When tag name begins with -, it will be confused with flag.
+	local cmd="perl -w -e '\$name=\"$tag_name\";if(\$name =~ /^[a-zA-Z_][\w_]{1,19}\$/){print 0;}else{print 1}' 2>/dev/null"
+
 	local result=`eval $cmd`
 
 	if [ $result -eq 0 ];then	#name format is ok
@@ -190,6 +201,7 @@ check_tag_format() {
 check_tag_in_shell() {
 	local tag_name=$1
 	local cmd="echo \$${tag_name}"
+echo $cmd
 	local result=`eval $cmd`
 
 	if [ -z $result ];then		#not in shell
@@ -285,22 +297,6 @@ clean_list() {
 	unset_shell_variables
 	local list=`get_tag_file`
 	>$list
-}
-
-show_list_by_path() {
-	local list=`get_tag_file`
-
-	if [ ! -e $list ];then
-		>$list
-		return 0
-	fi
-
-	#debug
-	#cat $list
-
-	perl -pe 's/,/\t/' $list|sort -k 2,2
-
-	set_shell_variables
 }
 
 main() {
