@@ -2,7 +2,7 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.8
+# Version: 4.0.9
 # Package Version: 4.0.10
 # Date: 2016.08.09
 # Author: Bob Chang
@@ -46,6 +46,11 @@ get_tag_file() {
 	local username=`get_username`
 	tag_file_name=$username.$script_name
 	tag_file=$tag_folder/$tag_file_name
+
+	if [ ! -e $list ];then
+		>$list
+		exit 0
+	fi
 
 	echo $tag_file
 }
@@ -120,7 +125,33 @@ set_shell_variables() {
 }
 
 #
-_show_list() {
+#Note about show list - 2016.08.09
+#I have tried lots of way to implement this task, and
+#I found recent solution is the best.
+#The issues are
+#1. sort -k doesn't work in Cygwin when there are multiple white spaces
+#between columns, but it works on CentOS because it sees all white
+#spaces as one.
+#2. I tried to use only one function e.g. _show_list to print formated 
+#output (read output from other function then printf line by line), but
+#the performance is terribly slow.
+#So the functions are not reuseable, e.g. for output by sub-path it must
+#be a new function to handle it.
+#
+show_list() {
+	local list=`get_tag_file`
+
+	sort $list|_show_list
+
+	#debug
+	#cat -A $list
+
+	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+
+	set_shell_variables
+}
+
+show_list_by_path() {
 	local list=`get_tag_file`
 
 	if [ ! -e $list ];then
@@ -131,19 +162,11 @@ _show_list() {
 	#debug
 	#cat -A $list
 
-	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list
+	sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
 
-}
-
-show_list() {
-	_show_list|sort
 	set_shell_variables
 }
-
-show_list_by_path() {
-	_show_list|sort -k 2,2
-	set_shell_variables
-}
+#
 
 unset_tag_in_shell() {
 	local tag_name=$1

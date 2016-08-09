@@ -104,6 +104,8 @@ remove what? forget....
 	ckpkv   /opt/tools/ckpkv/work
 	work    /opt/tools/g2w/work
 
+23. Huston, we got a problem again! sort -k will not work on Cygwin when there are more than one white space btw. columns. Need work around! (bug,major)
+
 }}} --------------------------------------------------
 
 Finished:
