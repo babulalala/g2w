@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.11
-# Package Version: 4.0.13
+# Version: 4.0.12
+# Package Version: 4.0.14
 # Date: 2016.08.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -237,7 +237,7 @@ check_tag_format() {
 	#The reason why can't we use - in tag name because:
 	#1. It's invalid of shell variable naming rule.
 	#2. When tag name begins with -, it will be confused with flag.
-	local cmd="perl -w -e '\$name=\"$tag_name\";if(\$name =~ /^[a-zA-Z_][\w_]{1,19}\$/){print 0;}else{print 1}' 2>/dev/null"
+	local cmd="perl -w -e '\$name=\"$tag_name\";if(\$name =~ /^[a-zA-Z_][\w_]{0,19}\$/){print 0;}else{print 1}' 2>/dev/null"
 
 	local result=`eval $cmd`
 
@@ -251,7 +251,6 @@ check_tag_format() {
 check_tag_in_shell() {
 	local tag_name=$1
 	local cmd="echo \$${tag_name}"
-echo $cmd
 	local result=`eval $cmd`
 
 	if [ -z $result ];then		#not in shell
