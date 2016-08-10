@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.10
-# Package Version: 4.0.12
-# Date: 2016.08.09
+# Version: 4.0.11
+# Package Version: 4.0.13
+# Date: 2016.08.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -80,6 +80,7 @@ Options
   -gf	    get tag file name
   -h        show this help
   -r	    show tags info sorted by path
+  -u tag    show tags which pathes under this tag path
   -V        show version
 
 Tag List
@@ -124,7 +125,20 @@ set_shell_variables() {
 
 }
 
-#
+get_tag_path() {
+	local tag=$1
+	local list=`get_tag_file`
+	local cmd="grep '^$tag\b' $list"
+	local info=`eval $cmd`
+	
+	if [ ! -z $info ];then
+		echo $info|cut -d , -f 2
+	else
+		exit
+	fi
+}
+
+# Show list
 #Note about show list - 2016.08.09
 #I have tried lots of way to implement this task, and
 #I found recent solution is the best.
@@ -152,17 +166,33 @@ show_list() {
 show_list_by_path() {
 	local list=`get_tag_file`
 
-	if [ ! -e $list ];then
-		>$list
-		return 0
-	fi
-
 	#debug
 	#cat -A $list
 
 	sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
 
 	set_shell_variables
+}
+
+show_list_under_tag(){
+	local tag_name=$1
+	local list=`get_tag_file`
+
+	#check tag format
+	check_tag_format $tag_name
+	local result=$?
+	
+	if [ $result -eq 1 ];then
+		echo "invalid tag name format"
+		return 1
+	fi
+
+	#get tag path
+	local path=`get_tag_path $tag_name`
+	
+	#compare path with other pathes
+	grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+
 }
 #
 
@@ -183,7 +213,6 @@ delete_tag(){
 	else
 		return 1
 	fi
-
 }
 
 _delete_tag() {
@@ -336,6 +365,8 @@ main() {
 		-h) show_usage
 		;;
 		-r) show_list_by_path
+		;;
+		-u) show_list_under_tag $2
 		;;
 		-V) show_version
 		;;
