@@ -2,20 +2,23 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.12
+# Version: 4.0.13
 # Package Version: 4.0.14
-# Date: 2016.08.10
+# Date: 2016.08.15
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
 
-#don't modify here, because of alias the $0 is /bin/bash
+#don't modify here, because the $0 is /bin/bash for alias 
 script_name=sw
 script_full_name=sw
 this_file=/usr/local/bin/$script_full_name
 tag_folder=~
 
+# variables #
+
 # functions #
+#function: get_script_version
 get_script_version() {
 	local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
 	if [ -z $version ];then
@@ -25,6 +28,7 @@ get_script_version() {
 	fi
 }
 
+#function: get_pkg_version
 get_pkg_version() {
 	local version=`grep '^# Package Version:' $this_file|cut -d ' ' -f 4`
 	if [ -z $version ];then
@@ -348,7 +352,11 @@ clean_list() {
 	>$list
 }
 
-main() {
+#the function main is used for source (I can't use exit or return 
+#directly in script otherwise the shell will terminate). Recently 
+#it seems ok using if-else instead of it, but for future expansion 
+#I keep this main() way.
+main() {				
 	if [ $# -eq 0 ];then
 		show_list
 		return 0
@@ -374,7 +382,7 @@ main() {
 	esac
 }
 
-## Main ##
+# main #
 main $@
 
-## End of script ##
+# end of script #
