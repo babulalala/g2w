@@ -130,6 +130,17 @@ remove what? forget.... un-necessary functions?
 	lfunc add #function: <function name> when it finds
 	^<function name>() {
 
+26. Can't find g2w.sw file after installation. (bug,major)
+
+27. Tag can be followed by sub-path when using gw. (feature,minor)
+	e.g.
+	$ gw mydoc/Wifi
+
+28. Change sw <tag> output to only show this tag info (not the hole list). (refine,minor)
+	e.g.
+	$ sw opt
+	opt /opt
+
 }}} --------------------------------------------------
 
 Finished:
