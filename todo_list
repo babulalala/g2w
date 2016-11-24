@@ -86,6 +86,9 @@ remove what? forget.... un-necessary functions?
 	e.g.
 	# sw foo -nt "folder saves pics"
 	foo		/somewhere			"folder saves pics"
+
+	1. If foo already exists and pwd is not this path, add note to this tag.
+	2. If foo doesn't exist, save pwd to tag foo and add note.
 	(I am not sure if there must be 2 kinds of output with/without note column? First try with note to test if it's too noisy.)
 
 24. sw path with level
@@ -129,6 +132,32 @@ remove what? forget.... un-necessary functions?
 	b. lfunc -c sw		<= -c for check
 	lfunc add #function: <function name> when it finds
 	^<function name>() {
+
+26. Can't find g2w.sw file after installation. (bug,major)
+
+27. Tag can be followed by sub-path when using gw. (feature,minor)
+	e.g.
+	$ gw mydoc/Wifi
+
+28. Change sw <tag> output to only show this tag info (not the hole list). (refine,minor)
+	e.g.
+	$ sw opt
+	opt /opt
+
+29. Check recent path already marked as tag. (feature,minor)
+	e.g.
+	$ pwd
+	/tmp
+	$ sw .	<= . is ok?
+	tmp	/tmp
+
+30. Check tag content. (feature,minor)
+	e.g.
+	$ sw
+	l1	/l1	sample path
+	l2	/l2
+	$ sw -c	l1	<= not sure using -c (check) or -s (show)??
+	l1	/l1	sample path
 
 }}} --------------------------------------------------
 
