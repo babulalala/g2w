@@ -139,10 +139,10 @@ remove what? forget.... un-necessary functions?
 	e.g.
 	$ gw mydoc/Wifi
 
-28. Change sw <tag> output to only show this tag info (not the hole list). (refine,minor)
-	e.g.
-	$ sw opt
-	opt /opt
+}}} --------------------------------------------------
+
+Finished:
+{{{ --------------------------------------------------
 
 29. Check recent path already marked as tag. (feature,minor)
 	e.g.
@@ -150,6 +150,7 @@ remove what? forget.... un-necessary functions?
 	/tmp
 	$ sw .	<= . is ok?
 	tmp	/tmp
+- sw v4.0.14/2016.11.24
 
 30. Check tag content. (feature,minor)
 	e.g.
@@ -158,11 +159,14 @@ remove what? forget.... un-necessary functions?
 	l2	/l2
 	$ sw -c	l1	<= not sure using -c (check) or -s (show)??
 	l1	/l1	sample path
+- sw v4.0.14/2016.11.24
 
-}}} --------------------------------------------------
-
-Finished:
-{{{ --------------------------------------------------
+28. Change sw <tag> output to only show this tag info (not the hole list). (refine,minor)
+	e.g.
+	$ sw opt
+	opt /opt
+- sw v4.0.14/2016.11.24
+- also change sw -d output to silence
 
 22. sw output only the path under dedicated tag. (feature,minor)
 	e.g.

@@ -1,5 +1,41 @@
 g2w - Go to Work folder
 --------------------
+2016.11.24
+- There are still lots of features needed to develop. In order to make the progress more easier, the following things must be solved at first.
+1. function management: a program to scan the script and export the function details.
+comment format:
+#
+# function:
+#	func1	description
+# input:
+#	arg1	description
+#	arg2	description
+#	arg3	description
+# output:
+# 	output	description
+#
+func1() {
+	xxxxx
+}
+
+=> export
+ function:
+	func1	description
+ input:
+	arg1	description
+	arg2	description
+	arg3	description
+ output:
+ 	output	description
+
+2. function rule
+_<function name> := disposable function i.e. if you see this function, don't think to use it
+<function name> := reusable function i.e. if you see this function, you can reuse it.
+
+3. about version
+I have to think about it again. Is it really important to note every script a version or just use one package version?
+
+--------------------
 2016.07.19
 - Actually it must be very careful when using g2w shell variables. Sugestion is to varify content of var before using it. But wondering I found in Cygwin (don't know in CentOS) shell has auto completion functionf for variables. It prevents some mistakes like typo, very good. But g2w auto completion feature still needed especially when I found it is so effective on shell.
 

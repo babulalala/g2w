@@ -2,9 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.13
-# Package Version: 4.0.14
-# Date: 2016.08.15
+# Package Version: 4.0.15
+# Date: 2016.11.24
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -16,6 +15,8 @@ this_file=/usr/local/bin/$script_full_name
 tag_folder=~
 
 # variables #
+# 1 for debug, 0 for no
+debug=0
 
 # functions #
 #function: get_script_version
@@ -78,12 +79,14 @@ tag	    composed of a-z, A-Z, 0-9 or _, can't start with digit,
 
 Options
   N/A	    show tags info sorted by tag name
+  .	    check if recent work directory is recorded in list
   tag	    save tag with current work directory path
   -c        clean (delete) all tags in path list
   -d tag    delete tag in path list
   -gf	    get tag file name
   -h        show this help
   -r	    show tags info sorted by path
+  -tg	    show tag info if it is in list
   -u tag    show tags which pathes under this tag path
   -V        show version
 
@@ -229,11 +232,21 @@ _delete_tag() {
 
 	delete_tag $tag_name
 	unset_tag_in_shell $tag_name
-	show_list
+
+	#after delete tag don't new to show the tag list
+	#especially when there are lots of tags
+	#just keep output silent, if user wants he can use
+	# sw or sw -ct <tag name> to check result
+	#show_list
 }
 
 check_tag_format() {
 	local tag_name=$1
+
+	#debug
+	if [ $debug -eq 1 ];then
+		echo "$FUNCNAME: tag_name=$tag_name"
+	fi
 
 	#The naming rule is the same as shell environment variable 
 	#naming rule, only [a-zA-Z0-9_], min 1, max 20, 
@@ -278,6 +291,21 @@ check_tag_in_list() {
 	fi
 }
 
+# input: tag_name
+# output: formated tag_info
+show_tag_info() {
+	local tag_name=$1
+	local list=`get_tag_file`
+
+	#debug
+	if [ $debug -eq 1 ];then
+		echo "$FUNCNAME: tag_name=$tag_name"
+	fi
+
+	local tag_info=`grep "^$tag_name," $list`
+	echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+}
+
 add_tag() {
 	local tag_name=$1
 	local path=`pwd`
@@ -300,6 +328,12 @@ update_tag() {
 _save_path() {
 	local tag_name=$1
 
+	#debug
+	if [ $debug -eq 1 ];then
+		echo "$FUNCNAME: tag_name=$tag_name"
+		#read
+	fi
+
 	check_tag_format $tag_name
 	local result=$?
 	
@@ -308,16 +342,20 @@ _save_path() {
 		return 1
 	fi
 
+	#if tag is already in tag list?
 	check_tag_in_list $tag_name
 	result=$?
 
 	if [ $result -eq 0 ];then
+		#tag is in list, update it with new path
 		update_tag $tag_name
 	else
+		#if tag is used by shell?
 		check_tag_in_shell $tag_name
 		result=$?
 
 		if [ $result -eq 1 ];then
+			#add tag with path
 			add_tag $tag_name
 		else
 			echo "tag name already exists in shell"
@@ -326,7 +364,10 @@ _save_path() {
 		
 	fi
 
-	show_list
+	#after tag added I don't show all list
+	#just the info of this new tag
+	#show_list
+	show_tag_info $tag_name
 }
 	
 unset_shell_variables() {
@@ -352,6 +393,42 @@ clean_list() {
 	>$list
 }
 
+check_path() {
+	local list=`get_tag_file`
+	local work_path=`pwd`
+	grep ,$work_path$ $list |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+}
+
+check_tag() {
+	local tag_name=$1
+
+	#debug
+	if [ $debug -eq 1 ];then
+		echo "$FUNCNAME: tag_name=$tag_name"
+		#read
+	fi
+
+	check_tag_format $tag_name
+	local result=$?
+	
+	if [ $result -eq 1 ];then
+		echo "invalid tag name format"
+		return 1
+	fi
+
+	#if tag is already in tag list?
+	check_tag_in_list $tag_name
+	result=$?
+
+	if [ $result -eq 0 ];then
+		#tag is in list
+		show_tag_info $tag_name
+	else
+		:;	#do nothing :)
+	fi
+}
+	
+	
 #the function main is used for source (I can't use exit or return 
 #directly in script otherwise the shell will terminate). Recently 
 #it seems ok using if-else instead of it, but for future expansion 
@@ -363,6 +440,8 @@ main() {
 	fi
 
 	case $1 in
+		.) check_path
+		;;
 		-c) clean_list
 		;;
 		-d) _delete_tag $2
@@ -372,6 +451,8 @@ main() {
 		-h) show_usage
 		;;
 		-r) show_list_by_path
+		;;
+		-tg) check_tag $2
 		;;
 		-u) show_list_under_tag $2
 		;;
