@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.15
-# Package Version: 4.0.15
+# Version: 4.0.16
+# Package Version: 4.0.16
 # Date: 2016.11.24
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -87,7 +87,7 @@ Options
   -gf	    get tag file name
   -h        show this help
   -r	    show tags info sorted by path
-  -tg	    show tag info if it is in list
+  -tag	    show tag info if it is in list
   -u tag    show tags which pathes under this tag path
   -V        show version
 
@@ -453,7 +453,7 @@ main() {
 		;;
 		-r) show_list_by_path
 		;;
-		-tg) check_tag $2
+		-tag) check_tag $2
 		;;
 		-u) show_list_under_tag $2
 		;;
