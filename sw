@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.16
-# Package Version: 4.0.16
-# Date: 2016.11.24
+# Version: 4.0.17
+# Package Version: 4.0.17
+# Date: 2016.12.27
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -20,7 +20,16 @@ tag_folder=~
 debug=0
 
 # functions #
-#function: get_script_version
+
+#
+# Function: get_script_version
+# Description:
+#	- ouput this script version number only
+#	  e.g. 1.0.2
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: version number or - for no version number
+# 
 get_script_version() {
 	local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
 	if [ -z $version ];then
@@ -30,7 +39,9 @@ get_script_version() {
 	fi
 }
 
-#function: get_pkg_version
+#
+# Function: get_pkg_version
+#
 get_pkg_version() {
 	local version=`grep '^# Package Version:' $this_file|cut -d ' ' -f 4`
 	if [ -z $version ];then
@@ -40,6 +51,15 @@ get_pkg_version() {
 	fi
 }
 
+#
+# Function: show_version
+# Description:
+#	- ouput this script version in formate package version/script versiont
+#	  e.g. 1.2.0/1.1.7
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: formated version information
+# 
 show_version() {
 	local pkg_v=`get_pkg_version`
 	local script_v=`get_script_version`
@@ -47,20 +67,30 @@ show_version() {
 	echo "$pkg_v/$script_v"
 }
 
-# return tag file of user
+# 
+# Functions: get_tag_file
+# Description:
+#	- return full path of user's tag file
+# 	- if file doesn't exist, an empty file will be created
+# Input: N/A
+# Output: full path of user's tag file
+#	  e.g /root/root.sw
+# Usage: get_tag_file => /root/root.sw
+#
 get_tag_file() {
 	local username=`get_username`
 	tag_file_name=$username.$script_name
 	tag_file=$tag_folder/$tag_file_name
 
-	if [ ! -e $list ];then
-		>$list
-		exit 0
+	if [ ! -e $tag_file ];then
+		>$tag_file
 	fi
 
 	echo $tag_file
 }
 
+#
+# Function: show_usage
 #
 show_usage() {
 	local tag_file=`get_tag_file`
@@ -104,10 +134,22 @@ here
 
 }
 
+#
 get_username() {
 	whoami
 }
 
+#
+# Function: set_tag_in_shell
+# Description: 
+#	- set shell variable as tag vs path
+#	  e.g. set_tag_in_shell tmp /tmp
+#	  will result $tmp variable in shell with value /tmp
+#	- export this variable to sub shell too
+# Input: tag_name, path
+# Output: N/A
+# Usage: set_tag_in_shell tmp /tmp
+#
 set_tag_in_shell() {
 	local tag_name=$1
 	local path=$2
@@ -115,6 +157,13 @@ set_tag_in_shell() {
 	export $tag_name=$path
 }
 
+#
+# Function: set_shell_variables
+# Description:
+#	- set all tags in tag list to shell variables
+# Input: N/A
+# Output: N/A
+#
 set_shell_variables() {
 	local file=`get_tag_file`
 	local list=`cat $file`
@@ -133,6 +182,13 @@ set_shell_variables() {
 
 }
 
+#
+# Function: get_tag_path
+# Description: 
+# Input: tag name
+# Output: path of this tag, empty if tag doesn't exist
+# Usage: get_tag_path tmp => /tmp
+#
 get_tag_path() {
 	local tag=$1
 	local list=`get_tag_file`
@@ -142,10 +198,11 @@ get_tag_path() {
 	if [ ! -z $info ];then
 		echo $info|cut -d , -f 2
 	else
-		exit
+		echo 
 	fi
 }
 
+#
 # Show list
 #Note about show list - 2016.08.09
 #I have tried lots of way to implement this task, and
@@ -171,6 +228,7 @@ show_list() {
 	set_shell_variables
 }
 
+#
 show_list_by_path() {
 	local list=`get_tag_file`
 
@@ -182,6 +240,7 @@ show_list_by_path() {
 	set_shell_variables
 }
 
+#
 show_list_under_tag(){
 	local tag_name=$1
 	local list=`get_tag_file`
@@ -197,18 +256,23 @@ show_list_under_tag(){
 
 	#get tag path
 	local path=`get_tag_path $tag_name`
+
+	if [ ! -z "$path" ];then
 	
 	#compare path with other pathes
 	grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
 
+	fi
 }
 #
 
+#
 unset_tag_in_shell() {
 	local tag_name=$1
 	unset $tag_name
 }
 
+#
 delete_tag(){
 	local tag_name=$1
 	local list=`get_tag_file`
