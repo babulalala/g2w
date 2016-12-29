@@ -152,7 +152,8 @@ get_username() {
 #	- export this variable to sub shell too
 # Input: tag_name, path
 # Output: N/A
-# Usage: set_tag_in_shell => in shell tmp=/tmp
+# Usage: set_tag_in_shell tmp /tmp
+#	=> in shell tmp=/tmp
 #
 set_tag_in_shell() {
 	local tag_name=$1
@@ -475,6 +476,8 @@ show_tag_info() {
 #
 # Function: add_tag
 # Description:
+# Input: tag_name
+# Output: N/A
 # Usage: add_tag tag_name
 #	=> add tag_name and path to tag list
 #	=> set tag_name as variable in shell
@@ -494,6 +497,11 @@ add_tag() {
 #
 # Function: update_tag
 # Description:
+# Input: tag_name
+# Output: N/A
+# Usage: update_tag tag_name
+#	=> tag_name has new path in list
+#	=> shell variable tag_name have new path value
 #
 update_tag() {
 	local tag_name=$1
@@ -503,7 +511,12 @@ update_tag() {
 
 #
 # Function: _save_path
-# Description:
+# Description: 
+#	- high level function
+#	- perform any needed operations to add tag to system with its path
+#	- not so reusable
+# Input: tag_name
+# Usage: _save_path tag_name
 #
 _save_path() {
 	local tag_name=$1
@@ -557,6 +570,8 @@ _save_path() {
 #
 # Function: unset_shell_variables
 # Description:
+# Usage: unset_shell_variables
+#	=> all tag shell variables are unset
 #
 unset_shell_variables() {
 	local file=`get_tag_file`
@@ -577,6 +592,9 @@ unset_shell_variables() {
 
 #
 # Function: clean_list
+# Description:
+# Usage: clean_list
+#	=> all tag information are removed from system
 #
 clean_list() {
 	unset_shell_variables
@@ -589,6 +607,11 @@ clean_list() {
 
 #
 # Function: check_path
+# Description: check if recent work path already exists in tag list
+# Input: N/A
+# Output: formated tag and path information
+# Usage: check_path
+#	=> angl                 /var/www/html/angl
 #
 check_path() {
 	local list=`get_tag_file`
@@ -598,6 +621,13 @@ check_path() {
 
 #
 # Function: check_tag
+# Description:
+# Input: tag_name
+# Output:
+# Return: N/A
+# Usage: check_tag tag_name
+# 	find => angl                 /var/www/html/angl
+#	no find => N/A
 # 
 check_tag() {
 	local tag_name=$1
