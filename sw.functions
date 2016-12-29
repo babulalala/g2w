@@ -1,4 +1,4 @@
-----------
+------------------------------
 #
 # Function: get_script_version
 # Description:
@@ -11,13 +11,13 @@
 #
 get_script_version()
 
-----------
+------------------------------
 #
 # Function: get_pkg_version
 #
 get_pkg_version()
 
-----------
+------------------------------
 #
 # Function: show_version
 # Description:
@@ -29,7 +29,7 @@ get_pkg_version()
 #
 show_version()
 
-----------
+------------------------------
 #
 # Functions: get_tag_file
 # Description:
@@ -42,20 +42,20 @@ show_version()
 #
 get_tag_file()
 
-----------
+------------------------------
 #
 # Function: show_usage
 #
 show_usage()
 
-----------
+------------------------------
 #
 # Function: get_username
 # Usage: get_username => root
 #
 get_username()
 
-----------
+------------------------------
 #
 # Function: set_tag_in_shell
 # Description:
@@ -70,7 +70,7 @@ get_username()
 #
 set_tag_in_shell()
 
-----------
+------------------------------
 #
 # Function: set_shell_variables
 # Description:
@@ -81,7 +81,7 @@ set_tag_in_shell()
 #
 set_shell_variables()
 
-----------
+------------------------------
 #
 # Function: get_tag_path
 # Description:
@@ -91,7 +91,7 @@ set_shell_variables()
 #
 get_tag_path()
 
-----------
+------------------------------
 #
 # Function: show_list
 # Description: show tag list sorted by tag name
@@ -101,7 +101,11 @@ get_tag_path()
 #
 show_list()
 
-----------
+==============================
+# Group: Show List
+# Description:
+
+------------------------------
 #
 # Function: show_list_by_path
 # Description: show tag list but sorted by path
@@ -111,7 +115,7 @@ show_list()
 #
 show_list_by_path()
 
-----------
+------------------------------
 #
 # Function: show_list_under_tag
 # Description:
@@ -122,7 +126,7 @@ show_list_by_path()
 #
 show_list_under_tag()
 
-----------
+------------------------------
 #
 # Function: unset_tag_in_shell
 # Description: unset tag in shell
@@ -130,7 +134,7 @@ show_list_under_tag()
 #
 unset_tag_in_shell()
 
-----------
+------------------------------
 #
 # Function: delete_tag_from_list
 # Description: delete tag from tag list
@@ -138,7 +142,7 @@ unset_tag_in_shell()
 #
 delete_tag_from_list()
 
-----------
+------------------------------
 #
 # Function: _delete_tag
 # Description:
@@ -150,7 +154,7 @@ delete_tag_from_list()
 #
 _delete_tag()
 
-----------
+------------------------------
 #
 # Function: check_tag_format
 # Description:
@@ -171,7 +175,7 @@ _delete_tag()
 #
 check_tag_format()
 
-----------
+------------------------------
 #
 # Function: check_tag_in_shell
 # Description: check if tag already exits as variable in shell
@@ -186,7 +190,11 @@ check_tag_format()
 #
 check_tag_in_shell()
 
-----------
+==============================
+# Group: tag operation
+# Description:
+
+------------------------------
 #
 # Function: check_tag_in_list
 # Description: check if tag exits in tag list
@@ -201,7 +209,7 @@ check_tag_in_shell()
 #
 check_tag_in_list()
 
-----------
+------------------------------
 #
 # Function: show_tag_info
 # Description:
@@ -212,7 +220,7 @@ check_tag_in_list()
 #
 show_tag_info()
 
-----------
+------------------------------
 #
 # Function: add_tag
 # Description:
@@ -224,7 +232,7 @@ show_tag_info()
 #
 add_tag()
 
-----------
+------------------------------
 #
 # Function: update_tag
 # Description:
@@ -236,7 +244,7 @@ add_tag()
 #
 update_tag()
 
-----------
+------------------------------
 #
 # Function: _save_path
 # Description:
@@ -248,7 +256,11 @@ update_tag()
 #
 _save_path()
 
-----------
+==============================
+# Group: Tag operation with shell
+#
+
+------------------------------
 #
 # Function: unset_shell_variables
 # Description:
@@ -257,7 +269,7 @@ _save_path()
 #
 unset_shell_variables()
 
-----------
+------------------------------
 #
 # Function: clean_list
 # Description:
@@ -266,7 +278,10 @@ unset_shell_variables()
 #
 clean_list()
 
-----------
+==============================
+# Group: General operation
+
+------------------------------
 #
 # Function: check_path
 # Description: check if recent work path already exists in tag list
@@ -277,7 +292,7 @@ clean_list()
 #
 check_path()
 
-----------
+------------------------------
 #
 # Function: check_tag
 # Description:
@@ -290,7 +305,10 @@ check_path()
 #
 check_tag()
 
-----------
+==============================
+# Group: High level functions
+
+------------------------------
 #
 # Function: main
 #
