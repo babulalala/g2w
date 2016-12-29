@@ -29,6 +29,7 @@ debug=0
 #	- the version line must in form # Version: <version number>
 # Input: N/A
 # Output: version number or - for no version number
+# Usage: get_script_version => 1.0.2
 # 
 get_script_version() {
 	local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
@@ -135,6 +136,9 @@ here
 }
 
 #
+# Function: get_username
+# Usage: get_username => root
+#
 get_username() {
 	whoami
 }
@@ -148,7 +152,7 @@ get_username() {
 #	- export this variable to sub shell too
 # Input: tag_name, path
 # Output: N/A
-# Usage: set_tag_in_shell tmp /tmp
+# Usage: set_tag_in_shell => in shell tmp=/tmp
 #
 set_tag_in_shell() {
 	local tag_name=$1
@@ -163,6 +167,7 @@ set_tag_in_shell() {
 #	- set all tags in tag list to shell variables
 # Input: N/A
 # Output: N/A
+# Usage: set_shell_variable => in shell <tag1>=<path1>...
 #
 set_shell_variables() {
 	local file=`get_tag_file`
@@ -203,19 +208,11 @@ get_tag_path() {
 }
 
 #
-# Show list
-#Note about show list - 2016.08.09
-#I have tried lots of way to implement this task, and
-#I found recent solution is the best.
-#The issues are
-#1. sort -k doesn't work in Cygwin when there are multiple white spaces
-#between columns, but it works on CentOS because it sees all white
-#spaces as one.
-#2. I tried to use only one function e.g. _show_list to print formated 
-#output (read output from other function then printf line by line), but
-#the performance is terribly slow.
-#So the functions are not reuseable, e.g. for output by sub-path it must
-#be a new function to handle it.
+# Function: show_list
+# Description: show tag list sorted by tag name
+# Usage: show_list
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
 #
 show_list() {
 	local list=`get_tag_file`
@@ -223,11 +220,35 @@ show_list() {
 	#debug
 	#cat -A $list
 
+	#
+	# Note about show list - 2016.08.09
+	# I have tried lots of way to implement this task, and
+	# I found recent solution is the best.
+	# The issues are
+	# 1. sort -k doesn't work in Cygwin when there are multiple 
+	# white spaces between columns, but it works on CentOS 
+	# because it sees all white spaces as one.
+	# 2. I tried to use only one function e.g. _show_list to print 
+	# formated output (read output from other function then printf 
+	# line by line), but the performance is terribly slow. So the 
+	# functions are not reuseable, e.g. for output by sub-path it 
+	# must be a new function to handle it.
+	#
 	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
 
 	set_shell_variables
 }
 
+# Meta
+# Group: Show List
+# Description:
+
+#
+# Function: show_list_by_path
+# Description: show tag list but sorted by path
+# Usage: show_list_by_path
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
 #
 show_list_by_path() {
 	local list=`get_tag_file`
@@ -240,6 +261,13 @@ show_list_by_path() {
 	set_shell_variables
 }
 
+#
+# Function: show_list_under_tag
+# Description: 
+#	- show tag which path is under dedicated tag
+# Usage: show_list_under_tag tag_name
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
 #
 show_list_under_tag(){
 	local tag_name=$1
@@ -263,9 +291,14 @@ show_list_under_tag(){
 	grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
 
 	fi
-}
-#
 
+	set_shell_variables
+}
+
+#
+# Function: unset_tag_in_shell
+# Description: unset tag in shell
+# Usage: unset_tag_in_shell tag_name => unset <tag name> in shell
 #
 unset_tag_in_shell() {
 	local tag_name=$1
@@ -273,7 +306,11 @@ unset_tag_in_shell() {
 }
 
 #
-delete_tag(){
+# Function: delete_tag_from_list
+# Description: delete tag from tag list
+# Usage: delete_tag tag_name => remove tag record from tag list
+#
+delete_tag_from_list(){
 	local tag_name=$1
 	local list=`get_tag_file`
 	local found=`grep ^$tag_name, $list >/dev/null 2>&1;echo $?`
@@ -287,6 +324,15 @@ delete_tag(){
 	fi
 }
 
+#
+# Function: _delete_tag
+# Description:
+#	- remove tag record from tag list
+#	- remove tag variable from shell
+# Usage: _delete_tag
+#	=> remove tag from list
+#	=> remove tag variable from shell
+#
 _delete_tag() {
 	local tag_name=$1
 
@@ -295,16 +341,34 @@ _delete_tag() {
 		return 1
 	fi
 
-	delete_tag $tag_name
+	delete_tag_from_list $tag_name
 	unset_tag_in_shell $tag_name
 
-	#after delete tag don't new to show the tag list
+	#after delete tag don't need to show the tag list
 	#especially when there are lots of tags
 	#just keep output silent, if user wants he can use
-	# sw or sw -ct <tag name> to check result
+	# sw or sw -tag <tag name> to check result
 	#show_list
 }
 
+#
+# Function: check_tag_format
+# Description: 
+#	- check tag name format
+#	- rule: 
+#		1. ^[a-zA-Z_][\w_]{0,19}\$
+#		2. 1 to 20 letters
+#		3. can't contain -
+#		4. can't begin with number
+# Input: tag_name
+# Output: N/A
+# Return:
+#	- 0 for ok
+#	- 1 for no ok
+# Usage: check_tag_format tag_name
+#	=> return 0 for ok
+#	=> return 1 for no ok
+#
 check_tag_format() {
 	local tag_name=$1
 
@@ -313,12 +377,14 @@ check_tag_format() {
 		echo "$FUNCNAME: tag_name=$tag_name"
 	fi
 
-	#The naming rule is the same as shell environment variable 
-	#naming rule, only [a-zA-Z0-9_], min 1, max 20, 
-	#do not begin with a digit.
-	#The reason why can't we use - in tag name because:
-	#1. It's invalid of shell variable naming rule.
-	#2. When tag name begins with -, it will be confused with flag.
+	#
+	# The naming rule is the same as shell environment variable 
+	# naming rule, only [a-zA-Z0-9_], min 1, max 20, 
+	# do not begin with a digit.
+	# The reason why can't we use - in tag name because:
+	# 1. It's invalid of shell variable naming rule.
+	# 2. When tag name begins with -, it will be confused with flag.
+	#
 	local cmd="perl -w -e '\$name=\"$tag_name\";if(\$name =~ /^[a-zA-Z_][\w_]{0,19}\$/){print 0;}else{print 1}' 2>/dev/null"
 
 	local result=`eval $cmd`
@@ -330,6 +396,18 @@ check_tag_format() {
 	fi
 }
 
+#
+# Function: check_tag_in_shell
+# Description: check if tag already exits as variable in shell
+# Input: tag_name
+# Output: N/A
+# Return:
+#	- 0 for in shell
+#	- 1 for not in shell
+# Usage: check_tag_in_shell tag_name
+#	=> return 0 for in shell
+#	=> return 1 for not in shell
+#
 check_tag_in_shell() {
 	local tag_name=$1
 	local cmd="echo \$${tag_name}"
@@ -342,6 +420,22 @@ check_tag_in_shell() {
 	fi
 }
 
+# Meta
+# Group: tag operation
+# Description:
+
+#
+# Function: check_tag_in_list
+# Description: check if tag exits in tag list
+# Input: tag_name
+# Output: N/A
+# Return:
+#	- 0 for in tag list
+#	- 1 for not in tag list
+# Usage: check_tag_in_list tag_name
+#	=> return 0 for in list
+#	=> return 1 for not in list
+# 
 check_tag_in_list() {
 	local tag_name=$1
 	local list=`get_tag_file`
@@ -356,8 +450,14 @@ check_tag_in_list() {
 	fi
 }
 
-# input: tag_name
-# output: formated tag_info
+#
+# Function: show_tag_info
+# Description:
+# Input: tag_name
+# Output: formated tag_info
+# Usage: show_tag_info tag_name
+#	=> work                 /opt/tools/g2w/work 
+#
 show_tag_info() {
 	local tag_name=$1
 	local list=`get_tag_file`
@@ -369,8 +469,16 @@ show_tag_info() {
 
 	local tag_info=`grep "^$tag_name," $list`
 	echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+
 }
 
+#
+# Function: add_tag
+# Description:
+# Usage: add_tag tag_name
+#	=> add tag_name and path to tag list
+#	=> set tag_name as variable in shell
+# 
 add_tag() {
 	local tag_name=$1
 	local path=`pwd`
@@ -383,13 +491,20 @@ add_tag() {
 	set_tag_in_shell $tag_name $path
 }
 
+#
+# Function: update_tag
+# Description:
+#
 update_tag() {
 	local tag_name=$1
-	delete_tag $tag_name
+	delete_tag_from_list $tag_name
 	add_tag $tag_name
-	
 }
 
+#
+# Function: _save_path
+# Description:
+#
 _save_path() {
 	local tag_name=$1
 
@@ -435,6 +550,14 @@ _save_path() {
 	show_tag_info $tag_name
 }
 	
+# Meta
+# Group: Tag operation with shell
+#
+
+#
+# Function: unset_shell_variables
+# Description:
+#
 unset_shell_variables() {
 	local file=`get_tag_file`
 	local list=`cat $file`
@@ -452,18 +575,30 @@ unset_shell_variables() {
 
 }
 
+#
+# Function: clean_list
+#
 clean_list() {
 	unset_shell_variables
 	local list=`get_tag_file`
 	>$list
 }
 
+# Meta
+# Group: General operation
+
+#
+# Function: check_path
+#
 check_path() {
 	local list=`get_tag_file`
 	local work_path=`pwd`
 	grep ,$work_path$ $list |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
 }
 
+#
+# Function: check_tag
+# 
 check_tag() {
 	local tag_name=$1
 
@@ -493,12 +628,20 @@ check_tag() {
 	fi
 }
 	
+# Meta
+# Group: High level functions
 	
-#the function main is used for source (I can't use exit or return 
-#directly in script otherwise the shell will terminate). Recently 
-#it seems ok using if-else instead of it, but for future expansion 
-#I keep this main() way.
+#
+# Function: main
+#
 main() {				
+	#
+	# the function main is used for source (I can't use exit or return 
+	# directly in script otherwise the shell will terminate). Recently 
+	# it seems ok using if-else instead of it, but for future expansion 
+	# I keep this main() way.
+	#
+
 	if [ $# -eq 0 ];then
 		show_list
 		return 0
