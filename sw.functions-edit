@@ -1,0 +1,166 @@
+----------
+#
+# Function: get_script_version
+# Description:
+#	- ouput this script version number only
+#	  e.g. 1.0.2
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: version number or - for no version number
+#
+get_script_version()
+
+----------
+#
+# Function: get_pkg_version
+#
+get_pkg_version()
+
+----------
+#
+# Function: show_version
+# Description:
+#	- ouput this script version in formate package version/script versiont
+#	  e.g. 1.2.0/1.1.7
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: formated version information
+#
+show_version()
+
+----------
+#
+# Functions: get_tag_file
+# Description:
+#	- return full path of user's tag file
+# 	- if file doesn't exist, an empty file will be created
+# Input: N/A
+# Output: full path of user's tag file
+#	  e.g /root/root.sw
+# Usage: get_tag_file => /root/root.sw
+#
+get_tag_file()
+
+----------
+#
+# Function: show_usage
+#
+show_usage()
+
+----------
+#
+get_username()
+
+----------
+#
+# Function: set_tag_in_shell
+# Description:
+#	- set shell variable as tag vs path
+#	  e.g. set_tag_in_shell tmp /tmp
+#	  will result $tmp variable in shell with value /tmp
+#	- export this variable to sub shell too
+# Input: tag_name, path
+# Output: N/A
+# Usage: set_tag_in_shell tmp /tmp
+#
+set_tag_in_shell()
+
+----------
+#
+# Function: set_shell_variables
+# Description:
+#	- set all tags in tag list to shell variables
+# Input: N/A
+# Output: N/A
+#
+set_shell_variables()
+
+----------
+#
+# Function: get_tag_path
+# Description:
+# Input: tag name
+# Output: path of this tag, empty if tag doesn't exist
+# Usage: get_tag_path tmp => /tmp
+#
+get_tag_path()
+
+----------
+#
+# Show list
+#Note about show list - 2016.08.09
+#I have tried lots of way to implement this task, and
+#I found recent solution is the best.
+#The issues are
+#1. sort -k doesn't work in Cygwin when there are multiple white spaces
+#between columns, but it works on CentOS because it sees all white
+#spaces as one.
+#2. I tried to use only one function e.g. _show_list to print formated
+#output (read output from other function then printf line by line), but
+#the performance is terribly slow.
+#So the functions are not reuseable, e.g. for output by sub-path it must
+#be a new function to handle it.
+#
+show_list()
+
+----------
+#
+show_list_by_path()
+
+----------
+#
+show_list_under_tag()
+
+----------
+#
+unset_tag_in_shell()
+
+----------
+#
+delete_tag()
+
+----------
+_delete_tag()
+
+----------
+check_tag_format()
+
+----------
+check_tag_in_shell()
+
+----------
+check_tag_in_list()
+
+----------
+# input: tag_name
+# output: formated tag_info
+show_tag_info()
+
+----------
+add_tag()
+
+----------
+update_tag()
+
+----------
+_save_path()
+
+----------
+unset_shell_variables()
+
+----------
+clean_list()
+
+----------
+check_path()
+
+----------
+check_tag()
+
+----------
+#the function main is used for source (I can't use exit or return
+#directly in script otherwise the shell will terminate). Recently
+#it seems ok using if-else instead of it, but for future expansion
+#I keep this main() way.
+main()
+
