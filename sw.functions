@@ -1,0 +1,357 @@
+==============================
+# Group: High level functions
+
+------------------------------
+#
+# Function: main
+# Description:
+#	- high level function
+# Usage: main
+#
+main()
+
+------------------------------
+#
+# Function: _save_path
+# Description:
+#	- high level function
+#	- perform any needed operations to add tag to system with its path
+#	- not so reusable
+#	- tag name format will be check
+# Input: tag_name
+# Return:
+#	1 for invalid tag name format
+# Usage: _save_path tag_name
+#
+_save_path()
+
+------------------------------
+#
+# Function: clean_list
+# Description:
+# Usage: clean_list
+#	=> all tag information are removed from system
+#
+clean_list()
+
+------------------------------
+#
+# Function: check_tag
+# Description:
+# Input: tag_name
+# Output:
+# Return: N/A
+# Usage: check_tag tag_name
+# 	find => angl                 /var/www/html/angl
+#	no find => N/A
+#
+check_tag()
+
+------------------------------
+#
+# Function: show_usage
+#
+show_usage()
+
+==============================
+# Group: Script version
+# Description: Handle script version
+#
+
+------------------------------
+#
+# Function: get_script_version
+# Description:
+#	- ouput this script version number only
+#	  e.g. 1.0.2
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: version number or - for no version number
+# Usage: get_script_version => 1.0.2
+#
+get_script_version()
+
+------------------------------
+#
+# Function: get_pkg_version
+#
+get_pkg_version()
+
+------------------------------
+#
+# Function: show_version
+# Description:
+#	- ouput this script version in formate package version/script versiont
+#	  e.g. 1.2.0/1.1.7
+#	- the version line must in form # Version: <version number>
+# Input: N/A
+# Output: formated version information
+#
+show_version()
+
+==============================
+# Group: General operation
+
+------------------------------
+#
+# Function: get_username
+# Usage: get_username => root
+#
+get_username()
+
+==============================
+# Group: tag operation
+# Description:
+
+------------------------------
+#
+# Function: check_path
+# Description: check if recent work path already exists in tag list
+# Input: N/A
+# Output: formated tag and path information
+# Usage: check_path
+#	=> angl                 /var/www/html/angl
+#
+check_path()
+
+------------------------------
+#
+# Functions: get_tag_file
+# Description:
+#	- return full path of user's tag file
+# 	- if file doesn't exist, an empty file will be created
+# Input: N/A
+# Output: full path of user's tag file
+#	  e.g /root/root.sw
+# Usage: get_tag_file => /root/root.sw
+#
+get_tag_file()
+
+------------------------------
+#
+# Function: get_tag_path
+# Description:
+# Input: tag name
+# Output: path of this tag, empty if tag doesn't exist
+# Usage: get_tag_path tmp => /tmp
+#
+get_tag_path()
+
+------------------------------
+#
+# Function: delete_tag_from_list
+# Description:
+#	- delete tag from tag list
+#	- this function will not check if this tag has other value
+#	  e.g. tag shell value
+# Usage: delete_tag tag_name => remove tag record from tag list
+#
+delete_tag_from_list()
+
+------------------------------
+#
+# Function: _delete_tag
+# Description:
+#	- remove tag record from tag list
+#	- remove tag variable from shell
+# Input:
+# Output:
+# Return:
+# Usage: _delete_tag tag_name
+#	=> remove tag from list
+#	=> remove tag variable from shell
+#
+_delete_tag()
+
+------------------------------
+#
+# Function: check_tag_format
+# Description:
+#	- check tag name format
+#	- rule:
+#		1. ^[a-zA-Z_][w_]{0,19}$
+#		2. 1 to 20 letters
+#		3. can't contain -
+#		4. can't begin with number
+# Input: tag_name
+# Output: N/A
+# Return:
+#	- 0 for ok
+#	- 1 for no ok
+# Usage: check_tag_format tag_name
+#	=> return 0 for ok
+#	=> return 1 for no ok
+#
+check_tag_format()
+
+------------------------------
+#
+# Function: check_tag_in_list
+# Description: check if tag exits in tag list
+# Input: tag_name
+# Output: N/A
+# Return:
+#	- 0 for in tag list
+#	- 1 for not in tag list
+# Usage: check_tag_in_list tag_name
+#	=> return 0 for in list
+#	=> return 1 for not in list
+#
+check_tag_in_list()
+
+------------------------------
+#
+# Function: show_tag_info
+# Description:
+# Input: tag_name
+# Output: formated tag_info
+# Usage: show_tag_info tag_name
+#	=> work                 /opt/tools/g2w/work
+#
+show_tag_info()
+
+------------------------------
+#
+# Function: add_tag
+# Description:
+#	- this function will not check tag name format
+#	- this function checks if tag is in shell
+#	- if everything ok, tag will add to tag list and shell
+# Input: tag_name
+# Output: N/A
+# Return:
+#	0 for added to list and shell
+#	1 for added to list only
+#	2 no added
+# Usage: add_tag tag_name
+#	=> add tag_name and path to tag list
+#	   set tag_name as variable in shell
+#	   return 0
+#	=> add tag_name and path to tag list (add note c as conflict)
+#	   return 1
+#	=> do nothing
+#	   return 2
+#
+add_tag()
+
+------------------------------
+#
+# Function: update_tag
+# Description:
+#	- this function will not check tag format
+#	- this function will check if tag shell value equals tag path
+#	- if they are equal the shell value will not be overwritten
+# Input: tag_name
+# Output: N/A
+# Usage: update_tag tag_name
+#	=> tag_name has new path in list
+#	=> shell variable tag_name have new path value if not conflict
+#
+update_tag()
+
+==============================
+# Group: Tag operation with shell
+# Description:
+
+------------------------------
+#
+# Function: check_tag_in_shell
+# Description: check if tag already exits as variable in shell
+# Input: tag_name
+# Output: shell value if it's found, otherwise empty
+# Return: N/A
+# Usage: check_tag_in_shell tag_name
+#	=> <value of shell variable>
+#	=> <empty> for not found
+#
+check_tag_in_shell()
+
+------------------------------
+#
+# Function: set_tag_in_shell
+# Description:
+#	- set shell variable as tag vs path
+#	  e.g. set_tag_in_shell tmp /tmp
+#	  will result shell variable tmp with value /tmp
+#	- export this variable to sub shell too
+#	- if shell variable exists and equals path, the function
+#	  will do nothing i.e. the shell value will not be overwritten
+# Input: tag_name, path
+# Output: N/A
+# Return:
+#	0 for added
+#	1 for not added/conflict
+# Usage: set_tag_in_shell tmp /tmp
+#	=> in shell tmp=/tmp
+#	=> return 0
+#
+set_tag_in_shell()
+
+------------------------------
+#
+# Function: unset_tag_in_shell
+# Description:
+#	- unset tag in shell
+#	- this function will not check if this tag exists in tag list
+#	- user must check tag list manually before invoke this function
+# Input: tag_name
+# Usage: unset_tag_in_shell tag_name
+#	=> unset <tag name> in shell
+#
+unset_tag_in_shell()
+
+------------------------------
+#
+# Function: set_shell_variables
+# Description:
+#	- set all tags in tag list to shell variables
+# Input: N/A
+# Output: N/A
+# Usage: set_shell_variable => in shell <tag1>=<path1>...
+#
+set_shell_variables()
+
+------------------------------
+#
+# Function: unset_shell_variables
+# Description:
+# Usage: unset_shell_variables
+#	=> all tag shell variables are unset
+#
+unset_shell_variables()
+
+==============================
+# Group: Show List
+# Description:
+
+------------------------------
+#
+# Function: show_list
+# Description: show tag list sorted by tag name
+# Usage: show_list
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list()
+
+------------------------------
+#
+# Function: show_list_by_path
+# Description: show tag list but sorted by path
+# Usage: show_list_by_path
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_by_path()
+
+------------------------------
+#
+# Function: show_list_under_tag
+# Description:
+#	- show tag which path is under dedicated tag
+# Usage: show_list_under_tag tag_name
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_under_tag()
+

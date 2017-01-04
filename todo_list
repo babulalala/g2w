@@ -6,7 +6,7 @@ Tasks:
 
 5. Refine README (refine,minor)
 
-7. delete multi-tags (feature,minor)
+7. can delete multi-tags (feature,minor)
 
 8. Handle tag vs shell var conflict (bug,major)
 	1. when new shell opening.
@@ -46,7 +46,7 @@ So, it meaning the user have to use this tag carefully.
 
 10. refine script install (need add more functions) (refine,minor)
 
-12. sw can import/mirage another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
+12. sw can import/migate another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
 	case 1 for import
 	$ sw -im <.sw file>
 	sw will import tags from <.sw file>, your recent tag data will be deleted.
@@ -73,8 +73,6 @@ So, it meaning the user have to use this tag carefully.
 16. Need remove function. (feature,minor)
 remove what? forget.... un-necessary functions?
 
-17. Add version functions to gw. (refine,minor)
-
 18. Need reload function (only once) for sw. (feature,major)
 	E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
 	A. sw <tag name> -> click enter -> save this tag info (<tag name>,<path>) to ~/<user name>-tmp.sw -> do normal jobs
@@ -87,9 +85,10 @@ remove what? forget.... un-necessary functions?
 	# sw foo -nt "folder saves pics"
 	foo		/somewhere			"folder saves pics"
 
-	1. If foo already exists and pwd is not this path, add note to this tag.
+	1. If foo already exists and pwd is not this path, add note to this tag.	<= don't need this anymore
 	2. If foo doesn't exist, save pwd to tag foo and add note.
 	(I am not sure if there must be 2 kinds of output with/without note column? First try with note to test if it's too noisy.)
+	2017.01.03 - add note for shell variable conflict first
 
 24. sw path with level
 	e.g.
@@ -103,6 +102,20 @@ remove what? forget.... un-necessary functions?
 	$ sw -l 3
 	win	/cygdrive/c/windows
 	tools	/cygdrive/d/tools
+
+27. Tag can be followed by sub-path when using gw. (feature,minor)
+	2017.01.03 - why????? forget the reason....
+	e.g.
+	$ gw mydoc/Wifi
+
+}}} --------------------------------------------------
+
+Finished:
+{{{ --------------------------------------------------
+
+26. Can't find g2w.sw file after installation. (bug,major)
+
+- sw v4.0.18/2017.01.03
 
 25. arrange the funcitons. open a new project (lfunc) to handle it.
 	a.
@@ -132,17 +145,10 @@ remove what? forget.... un-necessary functions?
 	b. lfunc -c sw		<= -c for check
 	lfunc add #function: <function name> when it finds
 	^<function name>() {
+- sw v4.0.18/2017.01.03
 
-26. Can't find g2w.sw file after installation. (bug,major)
-
-27. Tag can be followed by sub-path when using gw. (feature,minor)
-	e.g.
-	$ gw mydoc/Wifi
-
-}}} --------------------------------------------------
-
-Finished:
-{{{ --------------------------------------------------
+17. Add version functions to gw. (refine,minor)
+- sw v4.0.18/2017.01.03
 
 29. Check recent path already marked as tag. (feature,minor)
 	e.g.
