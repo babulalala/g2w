@@ -29,7 +29,7 @@ Script: sw
 # Function: update_tag
 
 # Group: Tag operation on shell
-# Function: check_tag_in_shell
+# Function: check_tag_conflict
 # Function: check_tag_conflict
 # Function: set_tag_in_shell
 # Function: unset_tag_in_shell
@@ -264,10 +264,15 @@ check_tag_in_list()
 # Description:
 #	- show tag all information
 #	- note if tag has shell variable conflict
-# Input: tag_name
+# Input:
+#	tag_name
+#	path
+#	note (reserved)
 # Output: formated tag_info
-# Usage: show_tag_info tag_name
+# Usage: show_tag_info tag_name path
 #	=> work                 /opt/tools/g2w/work
+#	or
+#	=> *work                 /opt/tools/g2w/work
 #
 show_tag_info()
 
@@ -320,21 +325,18 @@ update_tag()
 
 ------------------------------------------------------------
 #
-# Function: check_tag_in_shell
-# Description:
-#	- check if tag already exits as variable in shell
-#
-# Input: tag_name
-# Output: shell value if it's found, otherwise empty
+# Function: check_tag_conflict
+# Description
+# Input: tag_name path
+# Output:
 # Return:
-#	0 for not found
-#	1 for found and no conflict
-#	2 for found and conflict
-# Usage: check_tag_in_shell tag_name
-#	=> <value of shell variable>
-#	=> <empty> for not found
+#	0 for conflict
+#	1 for no conflict
+# Usage: check_tag_conflict tag_name path
+#	=> return 0 for conflict
+#	=> return 1 for no conflict
 #
-check_tag_in_shell()
+check_tag_conflict()
 
 ------------------------------------------------------------
 #

@@ -17,7 +17,7 @@
 # nnnnnneed to tag version and delete make safe commit of Git
 #!!!!
 
-## don't modify here, because the $0 is /bin/bash for alias 
+## Don't modify here, because the $0 is /bin/bash for alias.
 script_name=sw
 script_full_name=sw
 this_file=/usr/local/bin/$script_full_name
@@ -421,7 +421,7 @@ delete_tag() {
 
 	#if tag shell value equals tag path
 	local tag_path=`get_tag_path $tag_name`
-	local tag_shell_value=`check_tag_in_shell $tag_name`
+	local tag_shell_value=`echo \$$tag_name`
 	
 	#they are equal
 	if [ "$tag_path" == "$tag_shell_value" ];then
@@ -513,14 +513,18 @@ check_tag_in_list() {
 # Description:
 #	- show tag all information
 #	- note if tag has shell variable conflict
+#	- this function is suitable for single show, when 
+#	  used in loop will consume lots of time (because 
+#	  get_tag_path is a loop)
 # Input: tag_name
 # Output: formated tag_info
 # Usage: show_tag_info tag_name
 #	=> work                 /opt/tools/g2w/work 
+#	or
+#	=> *work                 /opt/tools/g2w/work 
 #
 show_tag_info() {
 	local tag_name=$1
-	local list=`get_tag_file`
 	local path=`get_tag_path $tag_name`
 
 	#debug
@@ -528,13 +532,55 @@ show_tag_info() {
 		echo "$FUNCNAME: tag_name=$tag_name"
 	fi
 
-	#
 	# 2016.01.05
 	# add conflict check
-	#local tag_info=`grep "^$tag_name," $list`
-	#echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+	#
+	# local tag_info=`grep "^$tag_name," $list`
+	# echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+	#
+	check_tag_conflict $tag_name $path
+	local result=$?
 
-	check_tag_conflict $tag_name
+	#is conflict
+	if [ $result -eq 0 ];then
+		echo -n '*'
+	fi
+
+	printf "%-20s %-20s\n" $tag_name $path;
+}
+
+#
+# Function: show_info
+# Description:
+#	- show given infomation
+#	- note if tag has shell variable conflict
+#	- this function is suitable for list show
+# Input: 
+#	tag_name
+#	path
+#	note (reserved)
+# Output: formated tag_info
+# Usage: show_info tag_name path
+#	=> work                 /opt/tools/g2w/work 
+#	or
+#	=> *work                 /opt/tools/g2w/work 
+#
+show_info() {
+	local tag_name=$1
+	local path=$2
+
+	#debug
+	if [ $debug -eq 1 ];then
+		echo "$FUNCNAME: tag_name=$tag_name"
+	fi
+
+	# 2016.01.05
+	# add conflict check
+	#
+	# local tag_info=`grep "^$tag_name," $list`
+	# echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+	#
+	check_tag_conflict $tag_name $path
 	local result=$?
 
 	#is conflict
@@ -581,7 +627,12 @@ add_tag() {
 	#and shell values is not equal to path
 	if [ $result -eq 1 ];then
 		local answer=n
-		local tag_shell_value=`check_tag_in_shell $tag_name`
+
+		#do use this command, it doesn't work
+		#local tag_shell_value=`echo \$$tag_name`
+		#use this instead
+		local cmd="echo \$$tag_name"
+		local tag_shell_value=`eval $cmd`
 
 		echo "tag name already exists in shell: $tag_name=$tag_shell_value"
 		echo -n "add to list only? [y/n] "
@@ -639,10 +690,10 @@ update_tag() {
 # Description:
 
 #
-# Function: check_tag_in_shell
+# -Function: check_tag_in_shell
 # Description: 
+# 	- this function is useless and obsolate
 #	- check if tag already exits as variable in shell
-#	
 # Input: tag_name
 # Output: shell value if it's found, otherwise empty
 # Return:
@@ -653,29 +704,53 @@ update_tag() {
 #	=> <value of shell variable>
 #	=> <empty> for not found
 #
-check_tag_in_shell() {
-	local tag_name=$1
-	local cmd="echo \$${tag_name}"
-	local result=`eval $cmd`
-	echo "$result"
-}
+#check_tag_in_shell() {
+#	local tag_name=$1
+#	local cmd="echo \$${tag_name}"
+#	local result=`eval $cmd`
+#	echo "$result"
+#}
 
 #
 # Function: check_tag_conflict
-# Description:
-# Input: tag_name
+# Description
+# Input: tag_name path
 # Output:
 # Return:
 #	0 for conflict
 #	1 for no conflict
-# Usage: check_tag_conflict tag_name
+# Usage: check_tag_conflict tag_name path
 #	=> return 0 for conflict
 #	=> return 1 for no conflict
 #
 check_tag_conflict() {
 	local tag_name=$1
-	local tag_shell_value=`check_tag_in_shell $tag_name`
-	local tag_path=`get_tag_path $tag_name`
+	local tag_path=$2
+	
+	# 2017.01.05
+	# 1. Don't use check_tag_in_shell because it consumes lots of time.
+	#   I have disabled it.
+	#
+	#   old code:
+	#   local tag_shell_value=`check_tag_in_shell $tag_name`
+	#
+	#   In stead of:
+	#   a. Use cmd and eval method to get shell variable value, 
+	#      the value could be emtpy.
+	#   b. Compare value with path.
+	#
+	# 2. Don't use tag_shell_value=`\$$tag_name, becaues:
+	#   a. It works only in shell script on CentOS.
+	#   b. It doesn't work on CentOS terminal (echo \$$tag_name =>
+	#      $work).
+	#   c. It doesn't work on Cygwin both terminal and script (echo 
+	#      \$$tag_name => $work).
+	#   I don't know why but with cmd and eval it works.
+	#
+	# DON'T MODIFY HERE!
+	local cmd="echo \$$tag_name"
+	local tag_shell_value=`eval $cmd`
+	#
 
 	#if tag_name is set in shell and 
 	#its value is not equal to path
@@ -710,7 +785,7 @@ set_tag_in_shell() {
 	local tag_name=$1
 	local path=$2
 
-	check_tag_conflict $tag_name
+	check_tag_conflict $tag_name $path
 	local result=$?
 
 	#0 for conflict
@@ -744,7 +819,9 @@ unset_tag_in_shell() {
 #	- set all tags in tag list to shell variables
 # Input: N/A
 # Output: N/A
-# Usage: set_shell_variable => in shell <tag1>=<path1>...
+# Usage: set_shell_variable
+#	=> in shell <tag1>=<path1>
+#	...
 #
 set_shell_variables() {
 	local file=`get_tag_file`
@@ -783,7 +860,6 @@ unset_shell_variables() {
 		
 		unset_tag_in_shell $tag
 	done
-
 }
 
 # Meta
@@ -805,7 +881,6 @@ show_list() {
 	#debug
 	#cat -A $list
 
-	#
 	# 2016.08.09
 	# Note about show list
 	# I have tried lots of way to implement this task, and
@@ -820,22 +895,49 @@ show_list() {
 	# functions are not reuseable, e.g. for output by sub-path it 
 	# must be a new function to handle it.
 	#
-	#perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+	# 2017.01.05
+	# In order to refactor this part, I still tried to use call sub 
+	# function in loop method. But there was a very heavy performance
+	# issue on Cygwin. But finally I found a acceptable way (I thought) 
+	# to solve this issue.
+	#
+	# perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+	# set_shell_variables
+	#
+	# while read loop performs very slowly on Cygwin.
+	#
+	# !DON'T USE THIS ON CYGWIN!
+	# while read line
+	# do
+	# 	name=`echo $line |cut -d ',' -f 1`
+	# 	path=`echo $line |cut -d ',' -f 2`
+	# 	show_info $name $path
+	# done<$list
 
-	#add conflict flag
-##don't know the right way to do now
-##shittttttt!!!!!
-# write perl script to handle mass output
-	
-	#local list_tmp=/tmp/`date +"%s".$script_name`
-	#cp $list $list_tmp
+	# !DON'T MODIFY HERE!
+	#show tag info and add conflict flag
+	local name
+	local path
 
-	#cat $list_tmp
-	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+	#0 for name
+	#1 for path
+	monitor=0
 
-	#echo $output
-	
-	set_shell_variables
+	for line in `cat $list|sed -s 's/,/ /g'`
+	do
+		if [ $monitor -eq 0 ];then
+			name=$line
+			monitor=1
+			continue
+		fi	
+
+		if [ $monitor -eq 1 ];then
+			path=$line
+			monitor=0
+			show_info $name $path
+		fi
+	done
+	#
 }
 
 #
@@ -887,7 +989,7 @@ show_list_under_tag(){
 
 	fi
 
-	set_shell_variables
+	#set_shell_variables
 }
 
 # main #
