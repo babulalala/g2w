@@ -814,7 +814,7 @@ show_list() {
 	# 1. sort -k doesn't work in Cygwin when there are multiple 
 	# white spaces between columns, but it works on CentOS 
 	# because it sees all white spaces as one.
-	# 2. I tried to use only one function e.g. _show_list to print 
+	# 2. I tried to use only one function e.g. show_tag_info to print 
 	# formated output (read output from other function then printf 
 	# line by line), but the performance is terribly slow. So the 
 	# functions are not reuseable, e.g. for output by sub-path it 
@@ -822,18 +822,18 @@ show_list() {
 	#
 	#perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
 
-	#
-	# 2017.01.05
-	# change to use show_tag_info
-	#perl -ne 'chomp;@s=split(/,/);printf("%-20s %-40s %s\n",$s[0],$s[1],$s[2]);' $list|sort
+	#add conflict flag
+##don't know the right way to do now
+##shittttttt!!!!!
+# write perl script to handle mass output
+	
+	#local list_tmp=/tmp/`date +"%s".$script_name`
+	#cp $list $list_tmp
 
-	local tag_names=`get_tag_names`
+	#cat $list_tmp
+	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
 
-	local name
-	for name in $tag_names
-	do
-		show_tag_info $name
-	done
+	#echo $output
 	
 	set_shell_variables
 }
