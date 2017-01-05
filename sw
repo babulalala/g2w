@@ -9,11 +9,20 @@
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
 
-#don't modify here, because the $0 is /bin/bash for alias 
+###!!!!! need to do
+# modify other show function
+# create get_pathes function
+# modify -r function
+# modify -u function
+# nnnnnneed to tag version and delete make safe commit of Git
+#!!!!
+
+## don't modify here, because the $0 is /bin/bash for alias 
 script_name=sw
 script_full_name=sw
 this_file=/usr/local/bin/$script_full_name
 tag_folder=~
+##
 
 # variables #
 # 1 for debug, 0 for no
@@ -48,7 +57,7 @@ main() {
 		;;
 		-c) clean_list
 		;;
-		-d) _delete_tag $2
+		-d) delete_tag $2
 		;;
 		-gf) get_tag_file
 		;;
@@ -62,13 +71,13 @@ main() {
 		;;
 		-V) show_version
 		;;
-		*) _save_path $1
+		*) save_path $1
 		;;
 	esac
 }
 
 #
-# Function: _save_path
+# Function: save_path
 # Description: 
 #	- high level function
 #	- perform any needed operations to add tag to system with its path
@@ -77,9 +86,9 @@ main() {
 # Input: tag_name
 # Return:
 #	1 for invalid tag name format
-# Usage: _save_path tag_name
+# Usage: save_path tag_name
 #
-_save_path() {
+save_path() {
 	local tag_name=$1
 
 	#debug
@@ -281,7 +290,7 @@ get_username() {
 }
 
 # Meta
-# Group: tag operation
+# Group: Tag operation
 # Description:
 
 #
@@ -299,7 +308,7 @@ check_path() {
 }
 
 # 
-# Functions: get_tag_file
+# Function: get_tag_file
 # Description:
 #	- return full path of user's tag file
 # 	- if file doesn't exist, an empty file will be created
@@ -339,6 +348,21 @@ get_tag_path() {
 }
 
 #
+# Function: get_tag_names
+# Description:
+#	- default in alphabetical order
+# Input: N/A
+# Output: sorted list of all tag names in tag list
+# Usage: get_tag_names
+#	=> output tag name list
+#
+get_tag_names() {
+	local list=`get_tag_file`
+
+	perl -ne 'chomp;@s=split(/,/);printf("%s\n",$s[0]);' $list|sort
+}
+
+#
 # Function: delete_tag_from_list
 # Description: 
 #	- delete tag from tag list
@@ -361,23 +385,23 @@ delete_tag_from_list(){
 }
 
 #
-# Function: _delete_tag
+# Function: delete_tag
 # Description:
+#	- check tag format
 #	- remove tag record from tag list
-#	- remove tag variable from shell
+#	- remove tag variable from shell if tag shell value equals
+#	  tag path, otherwise tag variable will not be unset
 # Input:
 # Output:
 # Return:
 #	0
 #	1 for 
 #	
-# Usage: _delete_tag tag_name
+# Usage: delete_tag tag_name
 #	=> remove tag from list
-#	=> remove tag variable from shell
+#	=> remove tag variable from shell if no conflict
 #
-_delete_tag() {
-###???? change _delete_tag to delete_tag
-####
+delete_tag() {
 	local tag_name=$1
 
 	if [ -z $tag_name ];then
@@ -487,6 +511,8 @@ check_tag_in_list() {
 #
 # Function: show_tag_info
 # Description:
+#	- show tag all information
+#	- note if tag has shell variable conflict
 # Input: tag_name
 # Output: formated tag_info
 # Usage: show_tag_info tag_name
@@ -495,15 +521,28 @@ check_tag_in_list() {
 show_tag_info() {
 	local tag_name=$1
 	local list=`get_tag_file`
+	local path=`get_tag_path $tag_name`
 
 	#debug
 	if [ $debug -eq 1 ];then
 		echo "$FUNCNAME: tag_name=$tag_name"
 	fi
 
-	local tag_info=`grep "^$tag_name," $list`
-	echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+	#
+	# 2016.01.05
+	# add conflict check
+	#local tag_info=`grep "^$tag_name," $list`
+	#echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
 
+	check_tag_conflict $tag_name
+	local result=$?
+
+	#is conflict
+	if [ $result -eq 0 ];then
+		echo -n '*'
+	fi
+
+	printf "%-20s %-20s\n" $tag_name $path;
 }
 
 #
@@ -551,7 +590,7 @@ add_tag() {
 		#need to refine here
 		if [ "$answer" == y ];then	#user want's add tag to list only
 			#add tag data to tag list
-			echo "$data,c">>$list
+			echo "$data">>$list
 			return 1
 		else
 			return 2	#do nothing
@@ -566,45 +605,50 @@ add_tag() {
 #
 # Function: update_tag
 # Description:
+#	- tag will be deleted than added
+#	- this function will not check if tag exists in tag list
 #	- this function will not check tag format
-#	- this function will check if tag shell value equals tag path
-#	- if they are equal the shell value will not be overwritten
 # Input: tag_name
 # Output: N/A
+# Return:
+#	0 for update to list and shell
+#	1 for update to list only
+#	2 no update
 # Usage: update_tag tag_name
 #	=> tag_name has new path in list
 #	=> shell variable tag_name have new path value if not conflict
 #
 update_tag() {
+	local result
 	local tag_name=$1
 
-####?????
-#this part should be done by delete tag
-	#if tag shell value equals tag path
-	local tag_shell_value=`check_tag_in_shell $tag_name`
-	local tag_path=`get_tag_path $tag_name`
-
-	#they are equal
-	if [ "$tag_shell_value" == "$tag_path" ];then
-		unset_tag_in_shell
-	fi	
-#######
-
-	delete_tag_from_list $tag_name
+	delete_tag $tag_name
 
 	add_tag $tag_name
+	result=$?
+
+	case $result in
+		0) return 0;;
+		1) return 1;;
+		*) return 2;;
+	esac
 }
 
 # Meta
-# Group: Tag operation with shell
+# Group: Tag operation on shell
 # Description:
 
 #
 # Function: check_tag_in_shell
-# Description: check if tag already exits as variable in shell
+# Description: 
+#	- check if tag already exits as variable in shell
+#	
 # Input: tag_name
 # Output: shell value if it's found, otherwise empty
-# Return: N/A
+# Return:
+#	0 for not found
+#	1 for found and no conflict
+#	2 for found and conflict
 # Usage: check_tag_in_shell tag_name
 #	=> <value of shell variable>
 #	=> <empty> for not found
@@ -613,8 +657,35 @@ check_tag_in_shell() {
 	local tag_name=$1
 	local cmd="echo \$${tag_name}"
 	local result=`eval $cmd`
-
 	echo "$result"
+}
+
+#
+# Function: check_tag_conflict
+# Description:
+# Input: tag_name
+# Output:
+# Return:
+#	0 for conflict
+#	1 for no conflict
+# Usage: check_tag_conflict tag_name
+#	=> return 0 for conflict
+#	=> return 1 for no conflict
+#
+check_tag_conflict() {
+	local tag_name=$1
+	local tag_shell_value=`check_tag_in_shell $tag_name`
+	local tag_path=`get_tag_path $tag_name`
+
+	#if tag_name is set in shell and 
+	#its value is not equal to path
+	#=> conflict
+	if [ ! -z "$tag_shell_value" ] && [ ! "$tag_shell_value" == "$path" ];then
+		return 0
+	else		
+		#no conflict
+		return 1
+	fi	
 }
 
 #
@@ -639,11 +710,11 @@ set_tag_in_shell() {
 	local tag_name=$1
 	local path=$2
 
-	local tag_shell_value=`check_tag_in_shell $tag_name`
+	check_tag_conflict $tag_name
+	local result=$?
 
-	#if tag_name is set in shell and 
-	#its value is not equal to path
-	if [ ! -z "$tag_shell_value" ] && [ ! "$tag_shell_value" == "$path" ];then
+	#0 for conflict
+	if [ $result -eq 0 ];then
 		#don't set it
 		return 1
 	else				#otherwise set it
@@ -723,8 +794,10 @@ unset_shell_variables() {
 # Function: show_list
 # Description: show tag list sorted by tag name
 # Usage: show_list
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
+#	=> <tag1>                 <path1>	<note>
+#	   ...
+#	=> in shell <tag1>=<path1>
+#	   ...
 #
 show_list() {
 	local list=`get_tag_file`
@@ -733,7 +806,8 @@ show_list() {
 	#cat -A $list
 
 	#
-	# Note about show list - 2016.08.09
+	# 2016.08.09
+	# Note about show list
 	# I have tried lots of way to implement this task, and
 	# I found recent solution is the best.
 	# The issues are
@@ -746,8 +820,21 @@ show_list() {
 	# functions are not reuseable, e.g. for output by sub-path it 
 	# must be a new function to handle it.
 	#
-	perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+	#perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
 
+	#
+	# 2017.01.05
+	# change to use show_tag_info
+	#perl -ne 'chomp;@s=split(/,/);printf("%-20s %-40s %s\n",$s[0],$s[1],$s[2]);' $list|sort
+
+	local tag_names=`get_tag_names`
+
+	local name
+	for name in $tag_names
+	do
+		show_tag_info $name
+	done
+	
 	set_shell_variables
 }
 

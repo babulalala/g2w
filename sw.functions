@@ -1,7 +1,49 @@
-==============================
+Script: sw
+
+# Group: High level functions
+# Function: main
+# Function: save_path
+# Function: clean_list
+# Function: check_tag
+# Function: show_usage
+
+# Group: Script version
+# Function: get_script_version
+# Function: get_pkg_version
+# Function: show_version
+
+# Group: General operation
+# Function: get_username
+
+# Group: Tag operation
+# Function: check_path
+# Function: get_tag_file
+# Function: get_tag_path
+# Function: get_tag_names
+# Function: delete_tag_from_list
+# Function: delete_tag
+# Function: check_tag_format
+# Function: check_tag_in_list
+# Function: show_tag_info
+# Function: add_tag
+# Function: update_tag
+
+# Group: Tag operation on shell
+# Function: check_tag_in_shell
+# Function: check_tag_conflict
+# Function: set_tag_in_shell
+# Function: unset_tag_in_shell
+# Function: set_shell_variables
+# Function: unset_shell_variables
+
+# Group: Show List
+# Function: show_list
+# Function: show_list_by_path
+# Function: show_list_under_tag
+============================================================
 # Group: High level functions
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: main
 # Description:
@@ -10,9 +52,9 @@
 #
 main()
 
-------------------------------
+------------------------------------------------------------
 #
-# Function: _save_path
+# Function: save_path
 # Description:
 #	- high level function
 #	- perform any needed operations to add tag to system with its path
@@ -21,11 +63,11 @@ main()
 # Input: tag_name
 # Return:
 #	1 for invalid tag name format
-# Usage: _save_path tag_name
+# Usage: save_path tag_name
 #
-_save_path()
+save_path()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: clean_list
 # Description:
@@ -34,7 +76,7 @@ _save_path()
 #
 clean_list()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: check_tag
 # Description:
@@ -47,18 +89,18 @@ clean_list()
 #
 check_tag()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_usage
 #
 show_usage()
 
-==============================
+============================================================
 # Group: Script version
 # Description: Handle script version
 #
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: get_script_version
 # Description:
@@ -71,13 +113,13 @@ show_usage()
 #
 get_script_version()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: get_pkg_version
 #
 get_pkg_version()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_version
 # Description:
@@ -89,21 +131,21 @@ get_pkg_version()
 #
 show_version()
 
-==============================
+============================================================
 # Group: General operation
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: get_username
 # Usage: get_username => root
 #
 get_username()
 
-==============================
-# Group: tag operation
+============================================================
+# Group: Tag operation
 # Description:
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: check_path
 # Description: check if recent work path already exists in tag list
@@ -114,9 +156,9 @@ get_username()
 #
 check_path()
 
-------------------------------
+------------------------------------------------------------
 #
-# Functions: get_tag_file
+# Function: get_tag_file
 # Description:
 #	- return full path of user's tag file
 # 	- if file doesn't exist, an empty file will be created
@@ -127,7 +169,7 @@ check_path()
 #
 get_tag_file()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: get_tag_path
 # Description:
@@ -137,7 +179,19 @@ get_tag_file()
 #
 get_tag_path()
 
-------------------------------
+------------------------------------------------------------
+#
+# Function: get_tag_names
+# Description:
+#	- default in alphabetical order
+# Input: N/A
+# Output: sorted list of all tag names in tag list
+# Usage: get_tag_names
+#	=> output tag name list
+#
+get_tag_names()
+
+------------------------------------------------------------
 #
 # Function: delete_tag_from_list
 # Description:
@@ -148,22 +202,27 @@ get_tag_path()
 #
 delete_tag_from_list()
 
-------------------------------
+------------------------------------------------------------
 #
-# Function: _delete_tag
+# Function: delete_tag
 # Description:
+#	- check tag format
 #	- remove tag record from tag list
-#	- remove tag variable from shell
+#	- remove tag variable from shell if tag shell value equals
+#	  tag path, otherwise tag variable will not be unset
 # Input:
 # Output:
 # Return:
-# Usage: _delete_tag tag_name
-#	=> remove tag from list
-#	=> remove tag variable from shell
+#	0
+#	1 for
 #
-_delete_tag()
+# Usage: delete_tag tag_name
+#	=> remove tag from list
+#	=> remove tag variable from shell if no conflict
+#
+delete_tag()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: check_tag_format
 # Description:
@@ -184,7 +243,7 @@ _delete_tag()
 #
 check_tag_format()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: check_tag_in_list
 # Description: check if tag exits in tag list
@@ -199,10 +258,12 @@ check_tag_format()
 #
 check_tag_in_list()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_tag_info
 # Description:
+#	- show tag all information
+#	- note if tag has shell variable conflict
 # Input: tag_name
 # Output: formated tag_info
 # Usage: show_tag_info tag_name
@@ -210,7 +271,7 @@ check_tag_in_list()
 #
 show_tag_info()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: add_tag
 # Description:
@@ -234,39 +295,63 @@ show_tag_info()
 #
 add_tag()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: update_tag
 # Description:
+#	- tag will be deleted than added
+#	- this function will not check if tag exists in tag list
 #	- this function will not check tag format
-#	- this function will check if tag shell value equals tag path
-#	- if they are equal the shell value will not be overwritten
 # Input: tag_name
 # Output: N/A
+# Return:
+#	0 for update to list and shell
+#	1 for update to list only
+#	2 no update
 # Usage: update_tag tag_name
 #	=> tag_name has new path in list
 #	=> shell variable tag_name have new path value if not conflict
 #
 update_tag()
 
-==============================
-# Group: Tag operation with shell
+============================================================
+# Group: Tag operation on shell
 # Description:
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: check_tag_in_shell
-# Description: check if tag already exits as variable in shell
+# Description:
+#	- check if tag already exits as variable in shell
+#
 # Input: tag_name
 # Output: shell value if it's found, otherwise empty
-# Return: N/A
+# Return:
+#	0 for not found
+#	1 for found and no conflict
+#	2 for found and conflict
 # Usage: check_tag_in_shell tag_name
 #	=> <value of shell variable>
 #	=> <empty> for not found
 #
 check_tag_in_shell()
 
-------------------------------
+------------------------------------------------------------
+#
+# Function: check_tag_conflict
+# Description:
+# Input: tag_name
+# Output:
+# Return:
+#	0 for conflict
+#	1 for no conflict
+# Usage: check_tag_conflict tag_name
+#	=> return 0 for conflict
+#	=> return 1 for no conflict
+#
+check_tag_conflict()
+
+------------------------------------------------------------
 #
 # Function: set_tag_in_shell
 # Description:
@@ -287,7 +372,7 @@ check_tag_in_shell()
 #
 set_tag_in_shell()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: unset_tag_in_shell
 # Description:
@@ -300,7 +385,7 @@ set_tag_in_shell()
 #
 unset_tag_in_shell()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: set_shell_variables
 # Description:
@@ -311,7 +396,7 @@ unset_tag_in_shell()
 #
 set_shell_variables()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: unset_shell_variables
 # Description:
@@ -320,21 +405,23 @@ set_shell_variables()
 #
 unset_shell_variables()
 
-==============================
+============================================================
 # Group: Show List
 # Description:
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_list
 # Description: show tag list sorted by tag name
 # Usage: show_list
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
+#	=> <tag1>                 <path1>	<note>
+#	   ...
+#	=> in shell <tag1>=<path1>
+#	   ...
 #
 show_list()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_list_by_path
 # Description: show tag list but sorted by path
@@ -344,7 +431,7 @@ show_list()
 #
 show_list_by_path()
 
-------------------------------
+------------------------------------------------------------
 #
 # Function: show_list_under_tag
 # Description:
