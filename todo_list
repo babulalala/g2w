@@ -8,42 +8,6 @@ Tasks:
 
 7. can delete multi-tags (feature,minor)
 
-8. Handle tag vs shell var conflict (bug,major)
-	1. when new shell opening.
-	2. set shell var name the same existing tag.
-	3. run sw. => conflicted tag has now shell var and prompt warning. 
-(should I check var content? If they are different then conflic....)
-e.g.
-		a. open terminal -> no sw shell vars now
-		b. set a=123 as shell var and a is tag existing in sw
-		c. run sw, shell vars will be created according to tags
-		d. when create a, a is alread existing in shell -> error!!
-
-another case
-		a. user bob use sw then su to root
-		b. now root wants to sw tag work, but it was used by bob -> work is alread existing in shell -> error!! Because they use the same shell environment.
-
-solution:
-		1. when sw create shell vars, when confliction appears, create only tag and warm the user.
-		e.g.
-		# sw
-		(Warning! One conflic found.)
-		run	/var/run
-		*work	/opt/work
-
-		=> *means shell var conflict and their value may be different
-
-		2. when sw tag and get conflict, user can run sw tag -t (-t for tag only) to add path to tag.
-		e.g.
-		# sw work
-		error
-		# sw work -t /# sw -t work
-		(Warning! One conflic found.)
-		run	/var/run
-		*work	/opt/work
-
-So, it meaning the user have to use this tag carefully.
-
 10. refine script install (need add more functions) (refine,minor)
 
 12. sw can import/migate another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
@@ -104,14 +68,54 @@ remove what? forget.... un-necessary functions?
 	tools	/cygdrive/d/tools
 
 27. Tag can be followed by sub-path when using gw. (feature,minor)
-	2017.01.03 - why????? forget the reason....
 	e.g.
 	$ gw mydoc/Wifi
+	2017.01.03 - why????? forget the reason....
+
+30. Autocomplete with tag name. (feature,minor)
 
 }}} --------------------------------------------------
 
 Finished:
 {{{ --------------------------------------------------
+
+8. Handle tag vs shell var conflict (bug,major)
+	1. when new shell opening.
+	2. set shell var name the same existing tag.
+	3. run sw. => conflicted tag has now shell var and prompt warning. 
+(should I check var content? If they are different then conflic....)
+e.g.
+		a. open terminal -> no sw shell vars now
+		b. set a=123 as shell var and a is tag existing in sw
+		c. run sw, shell vars will be created according to tags
+		d. when create a, a is alread existing in shell -> error!!
+
+another case
+		a. user bob use sw then su to root
+		b. now root wants to sw tag work, but it was used by bob -> work is alread existing in shell -> error!! Because they use the same shell environment.
+
+solution:
+		1. when sw create shell vars, when confliction appears, create only tag and warm the user.
+		e.g.
+		# sw
+		(Warning! One conflic found.)
+		run	/var/run
+		*work	/opt/work
+
+		=> *means shell var conflict and their value may be different
+
+		2. when sw tag and get conflict, user can run sw tag -t (-t for tag only) to add path to tag.
+		e.g.
+		# sw work
+		error
+		# sw work -t /# sw -t work
+		(Warning! One conflic found.)
+		run	/var/run
+		*work	/opt/work
+
+So, it meaning the user have to use this tag carefully.
+
+- sw v4.0.19/2017.01.06
 
 26. Can't find g2w.sw file after installation. (bug,major)
 
