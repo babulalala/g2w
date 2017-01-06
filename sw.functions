@@ -19,17 +19,19 @@ Script: sw
 # Function: check_path
 # Function: get_tag_file
 # Function: get_tag_path
+# Function: get_tag_pathes
+# Function: get_tag_name
 # Function: get_tag_names
 # Function: delete_tag_from_list
 # Function: delete_tag
 # Function: check_tag_format
 # Function: check_tag_in_list
 # Function: show_tag_info
+# Function: show_info
 # Function: add_tag
 # Function: update_tag
 
 # Group: Tag operation on shell
-# Function: check_tag_conflict
 # Function: check_tag_conflict
 # Function: set_tag_in_shell
 # Function: unset_tag_in_shell
@@ -40,10 +42,23 @@ Script: sw
 # Function: show_list
 # Function: show_list_by_path
 # Function: show_list_under_tag
-============================================================
-# Group: High level functions
-
 ------------------------------------------------------------
+#!/bin/bash
+#
+# Script: sw
+# Description:
+# Version: 4.0.19
+# Package Version: 4.0.19
+# Date: 2017.01.06
+# Author: Bob Chang
+# Tested: CentOS 6.x, Cygwin NT 6.1
+#
+## Don't modify here, because the $0 is /bin/bash for alias.
+##
+# variables #
+# 1 for debug, 0 for no
+# functions #
+# Group: High level functions
 #
 # Function: main
 # Description:
@@ -55,7 +70,7 @@ main()
 ------------------------------------------------------------
 #
 # Function: save_path
-# Description:
+# Description: 
 #	- high level function
 #	- perform any needed operations to add tag to system with its path
 #	- not so reusable
@@ -86,7 +101,7 @@ clean_list()
 # Usage: check_tag tag_name
 # 	find => angl                 /var/www/html/angl
 #	no find => N/A
-#
+# 
 check_tag()
 
 ------------------------------------------------------------
@@ -95,12 +110,10 @@ check_tag()
 #
 show_usage()
 
-============================================================
+------------------------------------------------------------
 # Group: Script version
 # Description: Handle script version
 #
-
-------------------------------------------------------------
 #
 # Function: get_script_version
 # Description:
@@ -110,7 +123,7 @@ show_usage()
 # Input: N/A
 # Output: version number or - for no version number
 # Usage: get_script_version => 1.0.2
-#
+# 
 get_script_version()
 
 ------------------------------------------------------------
@@ -128,24 +141,20 @@ get_pkg_version()
 #	- the version line must in form # Version: <version number>
 # Input: N/A
 # Output: formated version information
-#
+# 
 show_version()
 
-============================================================
-# Group: General operation
-
 ------------------------------------------------------------
+# Group: General operation
 #
 # Function: get_username
 # Usage: get_username => root
 #
 get_username()
 
-============================================================
+------------------------------------------------------------
 # Group: Tag operation
 # Description:
-
-------------------------------------------------------------
 #
 # Function: check_path
 # Description: check if recent work path already exists in tag list
@@ -153,11 +162,13 @@ get_username()
 # Output: formated tag and path information
 # Usage: check_path
 #	=> angl                 /var/www/html/angl
+#	or
+#	=> empty if not in tag list
 #
 check_path()
 
 ------------------------------------------------------------
-#
+# 
 # Function: get_tag_file
 # Description:
 #	- return full path of user's tag file
@@ -172,12 +183,36 @@ get_tag_file()
 ------------------------------------------------------------
 #
 # Function: get_tag_path
-# Description:
+# Description: 
 # Input: tag name
 # Output: path of this tag, empty if tag doesn't exist
-# Usage: get_tag_path tmp => /tmp
+# Usage: get_tag_path tmp
+#	=> /tmp
+#	or
+#	=> empty for not found
 #
 get_tag_path()
+
+------------------------------------------------------------
+#
+# Function: get_tag_pathes
+# Description:
+# Input: N/A
+# Usage: get_tag_pathes
+#	=> output path list
+#
+get_tag_pathes()
+
+------------------------------------------------------------
+#
+# Function: get_tag_name
+#
+# Usage: get_tag_name path
+#	=> tag name
+#	or
+#	=> emtpy for not found
+#
+get_tag_name()
 
 ------------------------------------------------------------
 #
@@ -194,7 +229,7 @@ get_tag_names()
 ------------------------------------------------------------
 #
 # Function: delete_tag_from_list
-# Description:
+# Description: 
 #	- delete tag from tag list
 #	- this function will not check if this tag has other value
 #	  e.g. tag shell value
@@ -214,8 +249,8 @@ delete_tag_from_list()
 # Output:
 # Return:
 #	0
-#	1 for
-#
+#	1 for 
+#	
 # Usage: delete_tag tag_name
 #	=> remove tag from list
 #	=> remove tag variable from shell if no conflict
@@ -225,10 +260,10 @@ delete_tag()
 ------------------------------------------------------------
 #
 # Function: check_tag_format
-# Description:
+# Description: 
 #	- check tag name format
-#	- rule:
-#		1. ^[a-zA-Z_][w_]{0,19}$
+#	- rule: 
+#		1. ^[a-zA-Z_][\w_]{0,19}\$
 #		2. 1 to 20 letters
 #		3. can't contain -
 #		4. can't begin with number
@@ -248,14 +283,14 @@ check_tag_format()
 # Function: check_tag_in_list
 # Description: check if tag exits in tag list
 # Input: tag_name
-# Output: N/A
-# Return:
-#	- 0 for in tag list
-#	- 1 for not in tag list
+# Output:
+#	path
+#	note (reserved)
+# Return: N/A
 # Usage: check_tag_in_list tag_name
-#	=> return 0 for in list
-#	=> return 1 for not in list
-#
+#	=> output path and note of this tag
+#	=> output empty for not found
+# 
 check_tag_in_list()
 
 ------------------------------------------------------------
@@ -264,17 +299,36 @@ check_tag_in_list()
 # Description:
 #	- show tag all information
 #	- note if tag has shell variable conflict
-# Input:
+#	- this function is suitable for single show, when 
+#	  used in loop will consume lots of time (because 
+#	  get_tag_path is a loop)
+# Input: tag_name
+# Output: formated tag_info
+# Usage: show_tag_info tag_name
+#	=> work                 /opt/tools/g2w/work 
+#	or
+#	=> *work                 /opt/tools/g2w/work 
+#
+show_tag_info()
+
+------------------------------------------------------------
+#
+# Function: show_info
+# Description:
+#	- show given infomation
+#	- note if tag has shell variable conflict
+#	- this function is suitable for list show
+# Input: 
 #	tag_name
 #	path
 #	note (reserved)
 # Output: formated tag_info
-# Usage: show_tag_info tag_name path
-#	=> work                 /opt/tools/g2w/work
+# Usage: show_info tag_name path
+#	=> work                 /opt/tools/g2w/work 
 #	or
-#	=> *work                 /opt/tools/g2w/work
+#	=> *work                 /opt/tools/g2w/work 
 #
-show_tag_info()
+show_info()
 
 ------------------------------------------------------------
 #
@@ -282,14 +336,19 @@ show_tag_info()
 # Description:
 #	- this function will not check tag name format
 #	- this function checks if tag is in shell
+#	- if conflict, the function will ask user y/n
+#	- if conflict, bypass mode keeps process silent
 #	- if everything ok, tag will add to tag list and shell
-# Input: tag_name
+# Input: 
+#	tag_name
+#	0 - for bypass mode, default is 1 for not bypass
 # Output: N/A
 # Return:
 #	0 for added to list and shell
 #	1 for added to list only
 #	2 no added
-# Usage: add_tag tag_name
+# Usage: 
+#	add_tag tag_name
 #	=> add tag_name and path to tag list
 #	   set tag_name as variable in shell
 #	   return 0
@@ -297,33 +356,57 @@ show_tag_info()
 #	   return 1
 #	=> do nothing
 #	   return 2
-#
+#	or
+#	add_tag tag_name 0
+#	=> enable bypass mode
+# 
 add_tag()
 
 ------------------------------------------------------------
 #
 # Function: update_tag
 # Description:
-#	- tag will be deleted than added
+#	- tag will be deleted and added
 #	- this function will not check if tag exists in tag list
 #	- this function will not check tag format
-# Input: tag_name
+# Input: 
+#	tag_name
+#	path
 # Output: N/A
 # Return:
 #	0 for update to list and shell
 #	1 for update to list only
 #	2 no update
-# Usage: update_tag tag_name
+# Usage: update_tag tag_name path
 #	=> tag_name has new path in list
 #	=> shell variable tag_name have new path value if not conflict
 #
 update_tag()
 
-============================================================
+------------------------------------------------------------
 # Group: Tag operation on shell
 # Description:
-
-------------------------------------------------------------
+#
+# -Function: check_tag_in_shell
+# Description: 
+# 	- this function is useless and obsolate
+#	- check if tag already exits as variable in shell
+# Input: tag_name
+# Output: shell value if it's found, otherwise empty
+# Return:
+#	0 for not found
+#	1 for found and no conflict
+#	2 for found and conflict
+# Usage: check_tag_in_shell tag_name
+#	=> <value of shell variable>
+#	=> <empty> for not found
+#
+#check_tag_in_shell() {
+#	local tag_name=$1
+#	local cmd="echo \$${tag_name}"
+#	local result=`eval $cmd`
+#	echo "$result"
+#}
 #
 # Function: check_tag_conflict
 # Description
@@ -340,23 +423,8 @@ check_tag_conflict()
 
 ------------------------------------------------------------
 #
-# Function: check_tag_conflict
-# Description:
-# Input: tag_name
-# Output:
-# Return:
-#	0 for conflict
-#	1 for no conflict
-# Usage: check_tag_conflict tag_name
-#	=> return 0 for conflict
-#	=> return 1 for no conflict
-#
-check_tag_conflict()
-
-------------------------------------------------------------
-#
 # Function: set_tag_in_shell
-# Description:
+# Description: 
 #	- set shell variable as tag vs path
 #	  e.g. set_tag_in_shell tmp /tmp
 #	  will result shell variable tmp with value /tmp
@@ -377,7 +445,7 @@ set_tag_in_shell()
 ------------------------------------------------------------
 #
 # Function: unset_tag_in_shell
-# Description:
+# Description: 
 #	- unset tag in shell
 #	- this function will not check if this tag exists in tag list
 #	- user must check tag list manually before invoke this function
@@ -394,7 +462,9 @@ unset_tag_in_shell()
 #	- set all tags in tag list to shell variables
 # Input: N/A
 # Output: N/A
-# Usage: set_shell_variable => in shell <tag1>=<path1>...
+# Usage: set_shell_variable
+#	=> in shell <tag1>=<path1>
+#	...
 #
 set_shell_variables()
 
@@ -407,11 +477,9 @@ set_shell_variables()
 #
 unset_shell_variables()
 
-============================================================
+------------------------------------------------------------
 # Group: Show List
 # Description:
-
-------------------------------------------------------------
 #
 # Function: show_list
 # Description: show tag list sorted by tag name
@@ -436,7 +504,7 @@ show_list_by_path()
 ------------------------------------------------------------
 #
 # Function: show_list_under_tag
-# Description:
+# Description: 
 #	- show tag which path is under dedicated tag
 # Usage: show_list_under_tag tag_name
 #	=> <tag1>                 <path1>...

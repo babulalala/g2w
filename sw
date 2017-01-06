@@ -2,20 +2,12 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.18
-# Package Version: 4.0.18
-# Date: 2017.01.03
+# Version: 4.0.19
+# Package Version: 4.0.19
+# Date: 2017.01.06
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
-
-###!!!!! need to do
-# modify other show function
-# create get_pathes function
-# modify -r function
-# modify -u function
-# nnnnnneed to tag version and delete make safe commit of Git
-#!!!!
 
 ## Don't modify here, because the $0 is /bin/bash for alias.
 script_name=sw
@@ -106,12 +98,11 @@ save_path() {
 	fi
 
 	#if tag is already in tag list?
-	check_tag_in_list $tag_name
-	result=$?
+	local path=`check_tag_in_list $tag_name`
 
-	if [ $result -eq 0 ];then
+	if [ ! -z $path ];then
 		#tag is in list, update it with new path
-		update_tag $tag_name
+		update_tag $tag_name $path
 		result=$?
 	else	
 		#new tag, add it
@@ -170,12 +161,10 @@ check_tag() {
 	fi
 
 	#if tag is already in tag list?
-	check_tag_in_list $tag_name
-	result=$?
+	local path=`check_tag_in_list $tag_name`
 
-	if [ $result -eq 0 ];then
-		#tag is in list
-		show_tag_info $tag_name
+	if [ ! -z $path ];then		#tag is in list
+		show_tag_info $tag_name $path
 	else
 		:;	#do nothing :)
 	fi
@@ -300,11 +289,27 @@ get_username() {
 # Output: formated tag and path information
 # Usage: check_path
 #	=> angl                 /var/www/html/angl
+#	or
+#	=> empty if not in tag list
 #
 check_path() {
 	local list=`get_tag_file`
 	local work_path=`pwd`
-	grep ,$work_path$ $list |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+
+	# 2017.01.06
+	# Change to use show_tag_info, although for loop is slowly.
+	#
+	#grep ,$work_path$ $list |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+
+	local tag_names=`get_tag_name $work_path`
+
+	if [ ! -z "$tag_names" ];then
+		local name
+		for name in $tag_names
+		do
+			show_tag_info $name
+		done
+	fi
 }
 
 # 
@@ -334,7 +339,10 @@ get_tag_file() {
 # Description: 
 # Input: tag name
 # Output: path of this tag, empty if tag doesn't exist
-# Usage: get_tag_path tmp => /tmp
+# Usage: get_tag_path tmp
+#	=> /tmp
+#	or
+#	=> empty for not found
 #
 get_tag_path() {
 	local tag=$1
@@ -345,6 +353,34 @@ get_tag_path() {
 	if [ ! -z $info ];then
 		echo $info|cut -d , -f 2
 	fi
+}
+
+#
+# Function: get_tag_pathes
+# Description:
+# Input: N/A
+# Usage: get_tag_pathes
+#	=> output path list
+#
+get_tag_pathes() {
+	local list=`get_tag_file`
+
+	perl -ne 'chomp;@s=split(/,/);printf("%s\n",$s[1]);' $list|sort
+}
+
+#
+# Function: get_tag_name
+#
+# Usage: get_tag_name path
+#	=> tag name
+#	or
+#	=> emtpy for not found
+#
+get_tag_name() {
+	local path=$1
+	local list=`get_tag_file`
+
+	grep ,$work_path$ $list |cut -d ',' -f 1
 }
 
 #
@@ -486,25 +522,22 @@ check_tag_format() {
 # Function: check_tag_in_list
 # Description: check if tag exits in tag list
 # Input: tag_name
-# Output: N/A
-# Return:
-#	- 0 for in tag list
-#	- 1 for not in tag list
+# Output:
+#	path
+#	note (reserved)
+# Return: N/A
 # Usage: check_tag_in_list tag_name
-#	=> return 0 for in list
-#	=> return 1 for not in list
+#	=> output path and note of this tag
+#	=> output empty for not found
 # 
 check_tag_in_list() {
 	local tag_name=$1
 	local list=`get_tag_file`
 
-	# 0 for find
-	local found=`grep ^$tag_name, $list >/dev/null 2>&1;echo $?`
+	local path=`grep ^$tag_name, $list|cut -d ',' -f 2`
 
-	if [ $found -eq 0 ];then	#found
-		return 0
-	else			#not found
-		return 1
+	if [ ! -z $path ];then	#found
+		echo $path
 	fi
 }
 
@@ -596,14 +629,19 @@ show_info() {
 # Description:
 #	- this function will not check tag name format
 #	- this function checks if tag is in shell
+#	- if conflict, the function will ask user y/n
+#	- if conflict, bypass mode keeps process silent
 #	- if everything ok, tag will add to tag list and shell
-# Input: tag_name
+# Input: 
+#	tag_name
+#	0 - for bypass mode, default is 1 for not bypass
 # Output: N/A
 # Return:
 #	0 for added to list and shell
 #	1 for added to list only
 #	2 no added
-# Usage: add_tag tag_name
+# Usage: 
+#	add_tag tag_name
 #	=> add tag_name and path to tag list
 #	   set tag_name as variable in shell
 #	   return 0
@@ -611,12 +649,21 @@ show_info() {
 #	   return 1
 #	=> do nothing
 #	   return 2
+#	or
+#	add_tag tag_name 0
+#	=> enable bypass mode
 # 
 add_tag() {
 	local tag_name=$1
+	local bypass=$2
 	local path=`pwd`
 	local data=$tag_name,$path
 	local list=`get_tag_file`
+	local answer=n
+
+	if [ -z $bypass ];then
+		bypass=1
+	fi
 		
 	#set tag as shell variable
 	set_tag_in_shell $tag_name $path
@@ -626,17 +673,20 @@ add_tag() {
 	#tag name is already used by shell
 	#and shell values is not equal to path
 	if [ $result -eq 1 ];then
-		local answer=n
+		if [ ! $bypass -eq 0 ];then	#no bypass
 
-		#do use this command, it doesn't work
-		#local tag_shell_value=`echo \$$tag_name`
-		#use this instead
-		local cmd="echo \$$tag_name"
-		local tag_shell_value=`eval $cmd`
+			#don't use this command, it doesn't work
+			#local tag_shell_value=`echo \$$tag_name`
+			#use this instead
+			local cmd="echo \$$tag_name"
+			local tag_shell_value=`eval $cmd`
 
-		echo "tag name already exists in shell: $tag_name=$tag_shell_value"
-		echo -n "add to list only? [y/n] "
-		read answer
+			echo "tag name already exists in shell: $tag_name=$tag_shell_value"
+			echo -n "add to list only? [y/n] "
+			read answer
+		else
+			answer=y
+		fi
 
 		#need to refine here
 		if [ "$answer" == y ];then	#user want's add tag to list only
@@ -656,26 +706,27 @@ add_tag() {
 #
 # Function: update_tag
 # Description:
-#	- tag will be deleted than added
+#	- tag will be deleted and added
 #	- this function will not check if tag exists in tag list
 #	- this function will not check tag format
-# Input: tag_name
+# Input: 
+#	tag_name
+#	path
 # Output: N/A
 # Return:
 #	0 for update to list and shell
 #	1 for update to list only
 #	2 no update
-# Usage: update_tag tag_name
+# Usage: update_tag tag_name path
 #	=> tag_name has new path in list
 #	=> shell variable tag_name have new path value if not conflict
 #
 update_tag() {
-	local result
 	local tag_name=$1
+	local path=$2
 
 	delete_tag $tag_name
-
-	add_tag $tag_name
+	add_tag $tag_name 0
 	result=$?
 
 	case $result in
@@ -923,7 +974,7 @@ show_list() {
 	#1 for path
 	monitor=0
 
-	for line in `cat $list|sed -s 's/,/ /g'`
+	for line in `sort $list|sed -s 's/,/ /g'`
 	do
 		if [ $monitor -eq 0 ];then
 			name=$line
@@ -934,6 +985,7 @@ show_list() {
 		if [ $monitor -eq 1 ];then
 			path=$line
 			monitor=0
+			set_tag_in_shell $name $path
 			show_info $name $path
 		fi
 	done
@@ -953,9 +1005,36 @@ show_list_by_path() {
 	#debug
 	#cat -A $list
 
-	sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+	# 2017.01.06
+	# 
+	#sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+	#set_shell_variables
 
-	set_shell_variables
+	# !DON'T MODIFY HERE!
+	local name
+	local path
+
+	#0 for name
+	#1 for path
+	monitor=0
+
+
+	for line in `sort -t ',' -k 2,2 $list|sed -s 's/,/ /g'`
+	do
+		if [ $monitor -eq 0 ];then
+			name=$line
+			monitor=1
+			continue
+		fi	
+
+		if [ $monitor -eq 1 ];then
+			path=$line
+			monitor=0
+			set_tag_in_shell $name $path
+			show_info $name $path
+		fi
+	done
+	#
 }
 
 #
@@ -984,12 +1063,37 @@ show_list_under_tag(){
 
 	if [ ! -z "$path" ];then
 	
-	#compare path with other pathes
-	grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+		# 2017.01.06
+		#
+		#grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+		#set_shell_variables
 
+		# !DON'T MODIFY HERE!
+		#compare path with other pathes
+		local name
+		local path
+
+		#0 for name
+		#1 for path
+		monitor=0
+
+		for line in `grep ",$path" $list|sort -t ',' -k 2,2|sed -s 's/,/ /g'`
+		do
+			if [ $monitor -eq 0 ];then
+				name=$line
+				monitor=1
+				continue
+			fi	
+
+			if [ $monitor -eq 1 ];then
+				path=$line
+				monitor=0
+				set_tag_in_shell $name $path
+				show_info $name $path
+			fi
+		done
+		#
 	fi
-
-	#set_shell_variables
 }
 
 # main #
