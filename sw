@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.19
-# Package Version: 4.0.19
+# Version: 4.0.20
+# Package Version: 4.0.20
 # Date: 2017.01.06
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -426,7 +426,8 @@ delete_tag_from_list(){
 #	- check tag format
 #	- remove tag record from tag list
 #	- remove tag variable from shell if tag shell value equals
-#	  tag path, otherwise tag variable will not be unset
+#	  recent work directory or path in tag list, otherwise tag 
+#	  variable will not be unset
 # Input:
 # Output:
 # Return:
@@ -434,8 +435,9 @@ delete_tag_from_list(){
 #	1 for 
 #	
 # Usage: delete_tag tag_name
-#	=> remove tag from list
-#	=> remove tag variable from shell if no conflict
+#	- remove tag record from tag list
+#       - remove tag variable from shell if tag shell value equals
+#         tag path, otherwise tag variable will not be unset
 #
 delete_tag() {
 	local tag_name=$1
@@ -457,7 +459,12 @@ delete_tag() {
 
 	#if tag shell value equals tag path
 	local tag_path=`get_tag_path $tag_name`
-	local tag_shell_value=`echo \$$tag_name`
+
+	#don't use this command, it doesn't work
+	#local tag_shell_value=`echo \$$tag_name`
+	#use this instead
+	local cmd="echo \$$tag_name"
+	local tag_shell_value=`eval $cmd`
 	
 	#they are equal
 	if [ "$tag_path" == "$tag_shell_value" ];then
