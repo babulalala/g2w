@@ -5,6 +5,7 @@ Script: sw
 # Function: save_path
 # Function: clean_list
 # Function: check_tag
+# Function: roll_back
 # Function: show_usage
 
 # Group: Script version
@@ -17,6 +18,7 @@ Script: sw
 
 # Group: Tag operation
 # Function: check_path
+# Function: get_roll_back_file
 # Function: get_tag_file
 # Function: get_tag_path
 # Function: get_tag_pathes
@@ -47,8 +49,8 @@ Script: sw
 #
 # Script: sw
 # Description:
-# Version: 4.0.19
-# Package Version: 4.0.19
+# Version: 4.0.20
+# Package Version: 4.0.20
 # Date: 2017.01.06
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -103,6 +105,14 @@ clean_list()
 #	no find => N/A
 # 
 check_tag()
+
+------------------------------------------------------------
+#
+# Function: roll_back
+# Description:
+# Usage: roll_back
+#
+roll_back()
 
 ------------------------------------------------------------
 #
@@ -166,6 +176,20 @@ get_username()
 #	=> empty if not in tag list
 #
 check_path()
+
+------------------------------------------------------------
+# 
+# Function: get_roll_back_file
+# Description:
+#	- return full path of user's roll back file
+# 	- if file doesn't exist, an empty file will be created
+# Input: N/A
+# Output: full path of user's roll back file
+#	  e.g /tmp/root.sw.rb
+# Usage: get_roll_back_file
+#	 => /tmp/root.sw.rb
+#
+get_roll_back_file()
 
 ------------------------------------------------------------
 # 
@@ -244,7 +268,8 @@ delete_tag_from_list()
 #	- check tag format
 #	- remove tag record from tag list
 #	- remove tag variable from shell if tag shell value equals
-#	  tag path, otherwise tag variable will not be unset
+#	  recent work directory or path in tag list, otherwise tag 
+#	  variable will not be unset
 # Input:
 # Output:
 # Return:
@@ -252,8 +277,9 @@ delete_tag_from_list()
 #	1 for 
 #	
 # Usage: delete_tag tag_name
-#	=> remove tag from list
-#	=> remove tag variable from shell if no conflict
+#	- remove tag record from tag list
+#       - remove tag variable from shell if tag shell value equals
+#         tag path, otherwise tag variable will not be unset
 #
 delete_tag()
 

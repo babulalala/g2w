@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.20
-# Package Version: 4.0.20
-# Date: 2017.01.06
+# Version: 4.0.21
+# Package Version: 4.0.21
+# Date: 2017.01.17
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -13,8 +13,10 @@
 script_name=sw
 script_full_name=sw
 this_file=/usr/local/bin/$script_full_name
-tag_folder=~
 ##
+
+tag_folder=~
+tmp_folder=/tmp
 
 # variables #
 # 1 for debug, 0 for no
@@ -56,6 +58,10 @@ main() {
 		-h) show_usage
 		;;
 		-r) show_list_by_path
+		;;
+		-rb) roll_back
+		;;
+		-srb) show_roll_back_info
 		;;
 		-tag) check_tag $2
 		;;
@@ -99,20 +105,38 @@ save_path() {
 
 	#if tag is already in tag list?
 	local path=`check_tag_in_list $tag_name`
+	local roll_back_file=`get_roll_back_file`
 
 	if [ ! -z $path ];then
 		#tag is in list, update it with new path
 		update_tag $tag_name $path
 		result=$?
+
+		#only update needs roll back
+		if [ ! $result -eq 2 ];then	#updated anyway
+			if [ $path == `pwd` ];then	#path equals recent work directory
+				#empty roll back file
+				>$roll_back_file
+			else
+				#add old path to roll back file
+				echo -n "$tag_name,$path" > $roll_back_file
+			fi
+		else
+			#empty roll back file
+			>$roll_back_file
+		fi
 	else	
 		#new tag, add it
 		add_tag $tag_name
 		result=$?
+
+		#empty roll back file anyway
+		>$roll_back_file
 	fi
 
 	if [ $result -eq 2 ];then	#not added
 		:;	#do nothing
-	else
+	else				#added, anyway
 		#after tag added I don't show all list
 		#show_list
 
@@ -169,6 +193,28 @@ check_tag() {
 		:;	#do nothing :)
 	fi
 }
+
+#
+# Function: roll_back
+# Description:
+# Return:
+# Usage: roll_back
+#
+roll_back() {
+	local roll_back_file=`get_roll_back_file`
+	local data=`cat $roll_back_file`
+
+	if [ -z $data ];then	#no roll back data
+		:;		#do nothing
+	else
+		local tag_name=`echo $data|cut -d ',' -f 1`
+		local path=`echo $data|cut -d ',' -f 2`
+
+		delete_tag $tag_name
+		add_tag $tag_name 0 $path
+		show_info $tag_name $path
+	fi
+}
 	
 #
 # Function: show_usage
@@ -198,6 +244,8 @@ Options
   -gf	    get tag file name
   -h        show this help
   -r	    show tags info sorted by path
+  -rb	    roll back tag to last saved path
+  -srb	    show roll back info
   -tag	    show tag info if it is in list
   -u tag    show tags which pathes under this tag path
   -V        show version
@@ -313,6 +361,29 @@ check_path() {
 }
 
 # 
+# Function: get_roll_back_file
+# Description:
+#	- return full path of user's roll back file
+# 	- if file doesn't exist, an empty file will be created
+# Input: N/A
+# Output: full path of user's roll back file
+#	  e.g /tmp/root.sw.rb
+# Usage: get_roll_back_file
+#	 => /tmp/root.sw.rb
+#
+get_roll_back_file() {
+	local username=`get_username`
+	local roll_back_file_name=$username.$script_name.rb
+	local roll_back_file=$tmp_folder/$roll_back_file_name
+
+	if [ ! -e $roll_back_file ];then
+		>$roll_back_file
+	fi
+
+	echo $roll_back_file
+}
+
+# 
 # Function: get_tag_file
 # Description:
 #	- return full path of user's tag file
@@ -324,8 +395,8 @@ check_path() {
 #
 get_tag_file() {
 	local username=`get_username`
-	tag_file_name=$username.$script_name
-	tag_file=$tag_folder/$tag_file_name
+	local tag_file_name=$username.$script_name
+	local tag_file=$tag_folder/$tag_file_name
 
 	if [ ! -e $tag_file ];then
 		>$tag_file
@@ -432,12 +503,13 @@ delete_tag_from_list(){
 # Output:
 # Return:
 #	0
-#	1 for 
-#	
+#	1 for empty tag name
+#	2 for invalied tag name format
 # Usage: delete_tag tag_name
 #	- remove tag record from tag list
 #       - remove tag variable from shell if tag shell value equals
 #         tag path, otherwise tag variable will not be unset
+#	- empty roll back file
 #
 delete_tag() {
 	local tag_name=$1
@@ -454,7 +526,7 @@ delete_tag() {
 	#tag format not ok
 	if [ $result -eq 1 ];then
 		echo "invalid tag name format"
-		return 1
+		return 2
 	fi	
 
 	#if tag shell value equals tag path
@@ -473,11 +545,16 @@ delete_tag() {
 
 	delete_tag_from_list $tag_name
 
+	local roll_back_file=`get_roll_back_file`
+	>$roll_back_file
+
 	#after delete tag don't need to show the tag list
 	#especially when there are lots of tags
 	#just keep output silent, if user wants he can use
 	# sw or sw -tag <tag name> to check result
 	#show_list
+
+	return 0	#delete ok
 }
 
 #
@@ -590,6 +667,24 @@ show_tag_info() {
 }
 
 #
+# Function: show_roll_back_info
+# Description:
+# Usage: show_roll_back_info
+#
+show_roll_back_info() {
+	local roll_back_file=`get_roll_back_file`
+	local data=`cat $roll_back_file`
+
+	if [ -z $data ];then
+		:;		#do nothing
+	else
+		local tag_name=`echo $data|cut -d ',' -f 1`
+		local path=`echo $data|cut -d ',' -f 2`
+		show_info $tag_name $path
+	fi
+}
+
+#
 # Function: show_info
 # Description:
 #	- show given infomation
@@ -639,9 +734,13 @@ show_info() {
 #	- if conflict, the function will ask user y/n
 #	- if conflict, bypass mode keeps process silent
 #	- if everything ok, tag will add to tag list and shell
+#	- if parameter path exists, path value will replace recent work directory
+#	- if path must be used with mode parameter
 # Input: 
 #	tag_name
-#	0 - for bypass mode, default is 1 for not bypass
+#	0 - for bypass mode
+#	1 - for interactive mode (default)
+#	path
 # Output: N/A
 # Return:
 #	0 for added to list and shell
@@ -652,18 +751,26 @@ show_info() {
 #	=> add tag_name and path to tag list
 #	   set tag_name as variable in shell
 #	   return 0
-#	=> add tag_name and path to tag list (add note c as conflict)
+#	=> add tag_name and path to tag list
 #	   return 1
 #	=> do nothing
 #	   return 2
 #	or
 #	add_tag tag_name 0
 #	=> enable bypass mode
+#	or
+#	add_tag tag_name 0 path
+#	=> add tag_name with path in bypass mode
 # 
 add_tag() {
 	local tag_name=$1
 	local bypass=$2
-	local path=`pwd`
+	local path=$3
+
+	if [ -z $path ];then
+		path=`pwd`
+	fi
+		
 	local data=$tag_name,$path
 	local list=`get_tag_file`
 	local answer=n
@@ -671,7 +778,7 @@ add_tag() {
 	if [ -z $bypass ];then
 		bypass=1
 	fi
-		
+
 	#set tag as shell variable
 	set_tag_in_shell $tag_name $path
 	local result=$?	

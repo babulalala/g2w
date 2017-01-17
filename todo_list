@@ -37,11 +37,6 @@ Tasks:
 16. Need remove function. (feature,minor)
 remove what? forget.... un-necessary functions?
 
-18. Need reload function (only once) for sw. (feature,major)
-	E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
-	A. sw <tag name> -> click enter -> save this tag info (<tag name>,<path>) to ~/<user name>-tmp.sw -> do normal jobs
-	B. sw -rb -> read <user name>-tmp.sw -> add tag back
-
 19. Need Make file to automate the pkg creation. (task,minor)
 
 23. sw output may add new column "note". (feature,minor)
@@ -78,6 +73,12 @@ remove what? forget.... un-necessary functions?
 
 Finished:
 {{{ --------------------------------------------------
+
+18. Need reload function (only once) for sw. (feature,major)
+	E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
+	A. sw <tag name> -> click enter -> save this tag info (<tag name>,<path>) to ~/<user name>-tmp.sw -> do normal jobs
+	B. sw -rb -> read <user name>-tmp.sw -> add tag back
+- sw v4.0.21/2017.01.17
 
 8. Handle tag vs shell var conflict (bug,major)
 	1. when new shell opening.
