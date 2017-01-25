@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.21
-# Package Version: 4.0.21
-# Date: 2017.01.17
+# Version: 4.0.22
+# Package Version: 4.0.22
+# Date: 2017.01.25
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -62,6 +62,8 @@ main() {
 		-rb) roll_back
 		;;
 		-srb) show_roll_back_info
+		;;
+		-svo) save_shell_variables_only
 		;;
 		-tag) check_tag $2
 		;;
@@ -246,6 +248,7 @@ Options
   -r	    show tags info sorted by path
   -rb	    roll back tag to last saved path
   -srb	    show roll back info
+  -svo	    save tag info as shell variable only
   -tag	    show tag info if it is in list
   -u tag    show tags which pathes under this tag path
   -V        show version
@@ -261,6 +264,205 @@ EXAMPLE
 
 here
 
+}
+
+#
+# Function: show_list
+# Description: show tag list sorted by tag name
+# Input: 
+#	flag: 0 - default, do everything
+#	      1 - don't output list info, only update shell variable
+# Usage: show_list
+#	=> <tag1>                 <path1>	<note>
+#	   ...
+#	=> in shell <tag1>=<path1>
+#	   ...
+#
+show_list() {
+	local flag=0
+
+	if [ ! -z $1 ];then
+		flag=$1
+	fi
+
+	local list=`get_tag_file`
+
+	#debug
+	#cat -A $list
+
+	# 2016.08.09
+	# Note about show list
+	# I have tried lots of way to implement this task, and
+	# I found recent solution is the best.
+	# The issues are
+	# 1. sort -k doesn't work in Cygwin when there are multiple 
+	# white spaces between columns, but it works on CentOS 
+	# because it sees all white spaces as one.
+	# 2. I tried to use only one function e.g. show_tag_info to print 
+	# formated output (read output from other function then printf 
+	# line by line), but the performance is terribly slow. So the 
+	# functions are not reuseable, e.g. for output by sub-path it 
+	# must be a new function to handle it.
+	#
+	# 2017.01.05
+	# In order to refactor this part, I still tried to use call sub 
+	# function in loop method. But there was a very heavy performance
+	# issue on Cygwin. But finally I found a acceptable way (I thought) 
+	# to solve this issue.
+	#
+	# perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
+	# set_shell_variables
+	#
+	# while read loop performs very slowly on Cygwin.
+	#
+	# !DON'T USE THIS ON CYGWIN!
+	# while read line
+	# do
+	# 	name=`echo $line |cut -d ',' -f 1`
+	# 	path=`echo $line |cut -d ',' -f 2`
+	# 	show_info $name $path
+	# done<$list
+
+	# !DON'T MODIFY HERE!
+	#show tag info and add conflict flag
+	local name
+	local path
+
+	#0 for name
+	#1 for path
+	monitor=0
+
+	for line in `sort $list|sed -s 's/,/ /g'`
+	do
+		if [ $monitor -eq 0 ];then
+			name=$line
+			monitor=1
+			continue
+		fi	
+
+		if [ $monitor -eq 1 ];then
+			path=$line
+			monitor=0
+			set_tag_in_shell $name $path
+
+			case $flag in
+				1) :;;	#don't show tag info
+				*) show_info $name $path;;	#show tag info
+			esac
+		fi
+	done
+	#
+}
+
+#
+# Function: show_list_by_path
+# Description: show tag list but sorted by path
+# Usage: show_list_by_path
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_by_path() {
+	local list=`get_tag_file`
+
+	#debug
+	#cat -A $list
+
+	# 2017.01.06
+	# 
+	#sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+	#set_shell_variables
+
+	# !DON'T MODIFY HERE!
+	local name
+	local path
+
+	#0 for name
+	#1 for path
+	monitor=0
+
+
+	for line in `sort -t ',' -k 2,2 $list|sed -s 's/,/ /g'`
+	do
+		if [ $monitor -eq 0 ];then
+			name=$line
+			monitor=1
+			continue
+		fi	
+
+		if [ $monitor -eq 1 ];then
+			path=$line
+			monitor=0
+			set_tag_in_shell $name $path
+			show_info $name $path
+		fi
+	done
+	#
+}
+
+#
+# Function: show_list_under_tag
+# Description: 
+#	- show tag which path is under dedicated tag
+# Usage: show_list_under_tag tag_name
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_under_tag(){
+	local tag_name=$1
+	local list=`get_tag_file`
+
+	#check tag format
+	check_tag_format $tag_name
+	local result=$?
+	
+	if [ $result -eq 1 ];then
+		echo "invalid tag name format"
+		return 1
+	fi
+
+	#get tag path
+	local path=`get_tag_path $tag_name`
+
+	if [ ! -z "$path" ];then
+	
+		# 2017.01.06
+		#
+		#grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
+		#set_shell_variables
+
+		# !DON'T MODIFY HERE!
+		#compare path with other pathes
+		local name
+		local path
+
+		#0 for name
+		#1 for path
+		monitor=0
+
+		for line in `grep ",$path" $list|sort -t ',' -k 2,2|sed -s 's/,/ /g'`
+		do
+			if [ $monitor -eq 0 ];then
+				name=$line
+				monitor=1
+				continue
+			fi	
+
+			if [ $monitor -eq 1 ];then
+				path=$line
+				monitor=0
+				set_tag_in_shell $name $path
+				show_info $name $path
+			fi
+		done
+		#
+	fi
+}
+
+#
+# Function: save_shell_variables_only
+#
+save_shell_variables_only() {
+	show_list 1
 }
 
 # Meta
@@ -1025,189 +1227,6 @@ unset_shell_variables() {
 		
 		unset_tag_in_shell $tag
 	done
-}
-
-# Meta
-# Group: Show List
-# Description:
-
-#
-# Function: show_list
-# Description: show tag list sorted by tag name
-# Usage: show_list
-#	=> <tag1>                 <path1>	<note>
-#	   ...
-#	=> in shell <tag1>=<path1>
-#	   ...
-#
-show_list() {
-	local list=`get_tag_file`
-
-	#debug
-	#cat -A $list
-
-	# 2016.08.09
-	# Note about show list
-	# I have tried lots of way to implement this task, and
-	# I found recent solution is the best.
-	# The issues are
-	# 1. sort -k doesn't work in Cygwin when there are multiple 
-	# white spaces between columns, but it works on CentOS 
-	# because it sees all white spaces as one.
-	# 2. I tried to use only one function e.g. show_tag_info to print 
-	# formated output (read output from other function then printf 
-	# line by line), but the performance is terribly slow. So the 
-	# functions are not reuseable, e.g. for output by sub-path it 
-	# must be a new function to handle it.
-	#
-	# 2017.01.05
-	# In order to refactor this part, I still tried to use call sub 
-	# function in loop method. But there was a very heavy performance
-	# issue on Cygwin. But finally I found a acceptable way (I thought) 
-	# to solve this issue.
-	#
-	# perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' $list|sort
-	# set_shell_variables
-	#
-	# while read loop performs very slowly on Cygwin.
-	#
-	# !DON'T USE THIS ON CYGWIN!
-	# while read line
-	# do
-	# 	name=`echo $line |cut -d ',' -f 1`
-	# 	path=`echo $line |cut -d ',' -f 2`
-	# 	show_info $name $path
-	# done<$list
-
-	# !DON'T MODIFY HERE!
-	#show tag info and add conflict flag
-	local name
-	local path
-
-	#0 for name
-	#1 for path
-	monitor=0
-
-	for line in `sort $list|sed -s 's/,/ /g'`
-	do
-		if [ $monitor -eq 0 ];then
-			name=$line
-			monitor=1
-			continue
-		fi	
-
-		if [ $monitor -eq 1 ];then
-			path=$line
-			monitor=0
-			set_tag_in_shell $name $path
-			show_info $name $path
-		fi
-	done
-	#
-}
-
-#
-# Function: show_list_by_path
-# Description: show tag list but sorted by path
-# Usage: show_list_by_path
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
-#
-show_list_by_path() {
-	local list=`get_tag_file`
-
-	#debug
-	#cat -A $list
-
-	# 2017.01.06
-	# 
-	#sort -t ',' -k 2,2 $list|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
-	#set_shell_variables
-
-	# !DON'T MODIFY HERE!
-	local name
-	local path
-
-	#0 for name
-	#1 for path
-	monitor=0
-
-
-	for line in `sort -t ',' -k 2,2 $list|sed -s 's/,/ /g'`
-	do
-		if [ $monitor -eq 0 ];then
-			name=$line
-			monitor=1
-			continue
-		fi	
-
-		if [ $monitor -eq 1 ];then
-			path=$line
-			monitor=0
-			set_tag_in_shell $name $path
-			show_info $name $path
-		fi
-	done
-	#
-}
-
-#
-# Function: show_list_under_tag
-# Description: 
-#	- show tag which path is under dedicated tag
-# Usage: show_list_under_tag tag_name
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
-#
-show_list_under_tag(){
-	local tag_name=$1
-	local list=`get_tag_file`
-
-	#check tag format
-	check_tag_format $tag_name
-	local result=$?
-	
-	if [ $result -eq 1 ];then
-		echo "invalid tag name format"
-		return 1
-	fi
-
-	#get tag path
-	local path=`get_tag_path $tag_name`
-
-	if [ ! -z "$path" ];then
-	
-		# 2017.01.06
-		#
-		#grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
-		#set_shell_variables
-
-		# !DON'T MODIFY HERE!
-		#compare path with other pathes
-		local name
-		local path
-
-		#0 for name
-		#1 for path
-		monitor=0
-
-		for line in `grep ",$path" $list|sort -t ',' -k 2,2|sed -s 's/,/ /g'`
-		do
-			if [ $monitor -eq 0 ];then
-				name=$line
-				monitor=1
-				continue
-			fi	
-
-			if [ $monitor -eq 1 ];then
-				path=$line
-				monitor=0
-				set_tag_in_shell $name $path
-				show_info $name $path
-			fi
-		done
-		#
-	fi
 }
 
 # main #

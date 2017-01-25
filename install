@@ -44,6 +44,7 @@ set_alias_cygwin() {
 
 	local cmd1="alias sw='source sw'"
 	local cmd2="alias gw='source gw'"
+	local cmd3="sw -svo"
 
 	local cmd=
 
@@ -64,9 +65,20 @@ set_alias_cygwin() {
 			check_result "$cmd"
 
 		fi
+
+		grep "$cmd3" $login_script >/dev/null 2>&1
+
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd3 to $login_script .... "
+			cmd="echo \"$cmd3\" >> $login_script"
+			check_result "$cmd"
+
+		fi
+
 	else
 		echo 'alias sw="source sw"' >> $login_script
 		echo 'gw="source gw"' >> $login_script
+		echo 'sw -svo' >> $login_script
 	fi
 }
 
@@ -78,8 +90,7 @@ set_alias() {
 	echo $os
 
 	case $os in
-		Cygwin) 
-			set_alias_cygwin
+		Cygwin) set_alias_cygwin
 		;;
 		GNU/Linux) set_alias_centos
 		;;

@@ -74,6 +74,9 @@ remove what? forget.... un-necessary functions?
 Finished:
 {{{ --------------------------------------------------
 
+31. Set tag info as shell variable after shell log in. (feature,major)
+- sw v4.0.22/2017.01.25
+
 18. Need reload function (only once) for sw. (feature,major)
 	E.g. I wan't to gw work but typo sw work, then I "sw -rb" (roll-back) work (tag) to original path.
 	A. sw <tag name> -> click enter -> save this tag info (<tag name>,<path>) to ~/<user name>-tmp.sw -> do normal jobs
