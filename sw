@@ -2,8 +2,8 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.23
-# Package Version: 4.0.23
+# Version: 4.0.24
+# Package Version: 4.0.24
 # Date: 2017.03.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
@@ -129,7 +129,8 @@ save_path() {
 		fi
 	else	
 		#new tag, add it
-		add_tag $tag_name
+		path=`pwd`
+		add_tag $tag_name 1 "$path"
 		result=$?
 
 		#empty roll back file anyway
@@ -143,7 +144,7 @@ save_path() {
 		#show_list
 
 		#just the info of this new tag
-		show_tag_info $tag_name
+		show_tag_info $tag_name $path
 	fi
 }
 	
@@ -332,26 +333,33 @@ show_list() {
 	#1 for path
 	monitor=0
 
-	for line in `sort $list|sed -s 's/,/ /g'`
-	do
-		if [ $monitor -eq 0 ];then
-			name=$line
-			monitor=1
-			continue
-		fi	
-
-		if [ $monitor -eq 1 ];then
-			path=$line
-			monitor=0
-			set_tag_in_shell $name "$path"
-
-			case $flag in
-				1) :;;	#don't show tag info
-				*) show_info $name "$path";;	#show tag info
-			esac
-		fi
-	done
 	#
+	# 2017.03.10
+	# There is an issue here. When path contains whitespace, the $list will be parsed unexpacted
+	# (more tokens). So I fixed this bug and note I must be careful with for loop.
+	#
+
+	IFS_ORG=$IFS
+	#set "breakline" as input file seperator
+	#!!! Don't modify here !!!
+	IFS="
+"
+#!!! 
+
+	for line in `sort $list`
+	do
+		name=`echo $line|cut -d ',' -f 1`
+		path=`echo $line|cut -d ',' -f 2`	
+
+		set_tag_in_shell $name "$path"
+
+		case $flag in
+			1) :;;	#don't show tag info
+			*) show_info $name "$path";;	#show tag info
+		esac
+	done
+
+	IFS=$IFS_ORG
 }
 
 #
@@ -557,7 +565,7 @@ check_path() {
 		local name
 		for name in $tag_names
 		do
-			show_tag_info $name
+			show_tag_info $name "$work_path"
 		done
 	fi
 }
@@ -942,9 +950,11 @@ show_info() {
 #	- if path must be used with mode parameter
 # Input: 
 #	tag_name
-#	0 - for bypass mode
-#	1 - for interactive mode (default)
-#	path
+#	bypass
+#		0 - for bypass mode
+#		1 - for interactive mode (default)
+#	path 
+#		path of tag_name
 # Output: N/A
 # Return:
 #	0 for added to list and shell
