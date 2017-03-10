@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.0.22
-# Package Version: 4.0.22
-# Date: 2017.01.25
+# Version: 4.0.23
+# Package Version: 4.0.23
+# Date: 2017.03.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 #
@@ -109,14 +109,14 @@ save_path() {
 	local path=`check_tag_in_list $tag_name`
 	local roll_back_file=`get_roll_back_file`
 
-	if [ ! -z $path ];then
+	if [ ! -z "$path" ];then
 		#tag is in list, update it with new path
-		update_tag $tag_name $path
+		update_tag $tag_name "$path"
 		result=$?
 
 		#only update needs roll back
 		if [ ! $result -eq 2 ];then	#updated anyway
-			if [ $path == `pwd` ];then	#path equals recent work directory
+			if [ "$path" == `pwd` ];then	#path equals recent work directory
 				#empty roll back file
 				>$roll_back_file
 			else
@@ -189,8 +189,8 @@ check_tag() {
 	#if tag is already in tag list?
 	local path=`check_tag_in_list $tag_name`
 
-	if [ ! -z $path ];then		#tag is in list
-		show_tag_info $tag_name $path
+	if [ ! -z "$path" ];then		#tag is in list
+		show_tag_info $tag_name "$path"
 	else
 		:;	#do nothing :)
 	fi
@@ -206,15 +206,15 @@ roll_back() {
 	local roll_back_file=`get_roll_back_file`
 	local data=`cat $roll_back_file`
 
-	if [ -z $data ];then	#no roll back data
+	if [ -z "$data" ];then	#no roll back data
 		:;		#do nothing
 	else
 		local tag_name=`echo $data|cut -d ',' -f 1`
 		local path=`echo $data|cut -d ',' -f 2`
 
 		delete_tag $tag_name
-		add_tag $tag_name 0 $path
-		show_info $tag_name $path
+		add_tag $tag_name 0 "$path"
+		show_info $tag_name "$path"
 	fi
 }
 	
@@ -343,11 +343,11 @@ show_list() {
 		if [ $monitor -eq 1 ];then
 			path=$line
 			monitor=0
-			set_tag_in_shell $name $path
+			set_tag_in_shell $name "$path"
 
 			case $flag in
 				1) :;;	#don't show tag info
-				*) show_info $name $path;;	#show tag info
+				*) show_info $name "$path";;	#show tag info
 			esac
 		fi
 	done
@@ -392,8 +392,8 @@ show_list_by_path() {
 		if [ $monitor -eq 1 ];then
 			path=$line
 			monitor=0
-			set_tag_in_shell $name $path
-			show_info $name $path
+			set_tag_in_shell $name "$path"
+			show_info $name "$path"
 		fi
 	done
 	#
@@ -450,8 +450,8 @@ show_list_under_tag(){
 			if [ $monitor -eq 1 ];then
 				path=$line
 				monitor=0
-				set_tag_in_shell $name $path
-				show_info $name $path
+				set_tag_in_shell $name "$path"
+				show_info $name "$path"
 			fi
 		done
 		#
@@ -623,8 +623,8 @@ get_tag_path() {
 	local cmd="grep '^$tag\b' $list"
 	local info=`eval $cmd`
 	
-	if [ ! -z $info ];then
-		echo $info|cut -d , -f 2
+	if [ ! -z "$info" ];then
+		echo "$info"|cut -d , -f 2
 	fi
 }
 
@@ -822,8 +822,8 @@ check_tag_in_list() {
 
 	local path=`grep ^$tag_name, $list|cut -d ',' -f 2`
 
-	if [ ! -z $path ];then	#found
-		echo $path
+	if [ ! -z "$path" ];then	#found
+		echo "$path"
 	fi
 }
 
@@ -835,16 +835,18 @@ check_tag_in_list() {
 #	- this function is suitable for single show, when 
 #	  used in loop will consume lots of time (because 
 #	  get_tag_path is a loop)
-# Input: tag_name
+# Input:
+#	tag_name
+# 	path
 # Output: formated tag_info
-# Usage: show_tag_info tag_name
+# Usage: show_tag_info tag_name path
 #	=> work                 /opt/tools/g2w/work 
 #	or
 #	=> *work                 /opt/tools/g2w/work 
 #
 show_tag_info() {
 	local tag_name=$1
-	local path=`get_tag_path $tag_name`
+	local path=$2
 
 	#debug
 	if [ $debug -eq 1 ];then
@@ -857,7 +859,7 @@ show_tag_info() {
 	# local tag_info=`grep "^$tag_name," $list`
 	# echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
 	#
-	check_tag_conflict $tag_name $path
+	check_tag_conflict $tag_name "$path"
 	local result=$?
 
 	#is conflict
@@ -865,7 +867,7 @@ show_tag_info() {
 		echo -n '*'
 	fi
 
-	printf "%-20s %-20s\n" $tag_name $path;
+	printf "%-20s %-20s\n" $tag_name "$path";
 }
 
 #
@@ -877,12 +879,12 @@ show_roll_back_info() {
 	local roll_back_file=`get_roll_back_file`
 	local data=`cat $roll_back_file`
 
-	if [ -z $data ];then
+	if [ -z "$data" ];then
 		:;		#do nothing
 	else
 		local tag_name=`echo $data|cut -d ',' -f 1`
 		local path=`echo $data|cut -d ',' -f 2`
-		show_info $tag_name $path
+		show_info $tag_name "$path"
 	fi
 }
 
@@ -917,7 +919,7 @@ show_info() {
 	# local tag_info=`grep "^$tag_name," $list`
 	# echo $tag_info |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
 	#
-	check_tag_conflict $tag_name $path
+	check_tag_conflict $tag_name "$path"
 	local result=$?
 
 	#is conflict
@@ -925,7 +927,7 @@ show_info() {
 		echo -n '*'
 	fi
 
-	printf "%-20s %-20s\n" $tag_name $path;
+	printf "%-20s %-20s\n" $tag_name "$path";
 }
 
 #
@@ -969,7 +971,7 @@ add_tag() {
 	local bypass=$2
 	local path=$3
 
-	if [ -z $path ];then
+	if [ -z "$path" ];then
 		path=`pwd`
 	fi
 		
@@ -982,7 +984,7 @@ add_tag() {
 	fi
 
 	#set tag as shell variable
-	set_tag_in_shell $tag_name $path
+	set_tag_in_shell $tag_name "$path"
 	local result=$?	
 
 	#1 for conflict:
@@ -1152,7 +1154,7 @@ set_tag_in_shell() {
 	local tag_name=$1
 	local path=$2
 
-	check_tag_conflict $tag_name $path
+	check_tag_conflict $tag_name "$path"
 	local result=$?
 
 	#0 for conflict
@@ -1160,7 +1162,7 @@ set_tag_in_shell() {
 		#don't set it
 		return 1
 	else				#otherwise set it
-		export $tag_name=$path
+		export $tag_name="$path"
 		return 0
 	fi	
 }
@@ -1203,7 +1205,7 @@ set_shell_variables() {
 		local tag=${data_arr[0]}
 		local path=${data_arr[1]}
 		
-		set_tag_in_shell $tag $path
+		set_tag_in_shell $tag "$path"
 	done
 }
 

@@ -2,9 +2,9 @@
 #
 # Script: gw
 # Descript: Change user work directory
-# Version: 4.0.1
-# Package Version: 4.0.14
-# Date: 2016.06.23
+# Version: 4.0.2
+# Package Version: 4.0.23
+# Date: 2017.03.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 # Note:
@@ -66,9 +66,9 @@ go_to() {
 
 	local path=`grep ^$tag_name, $list|cut -d ',' -f 2`
 
-	if [ ! -z $path ];then	#found
+	if [ ! -z "$path" ];then	#found
 		#echo $path
-		cd $path
+		cd "$path"
 		pwd
 	fi
 }
