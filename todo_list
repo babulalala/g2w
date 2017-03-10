@@ -49,7 +49,7 @@ remove what? forget.... un-necessary functions?
 	(I am not sure if there must be 2 kinds of output with/without note column? First try with note to test if it's too noisy.)
 	2017.01.03 - add note for shell variable conflict first
 
-24. sw path with level
+24. sw path with level (feature,minor)
 	e.g.
 	l1	/cygdrive
 	l2	/cygdrive/c
@@ -66,6 +66,7 @@ remove what? forget.... un-necessary functions?
 	e.g.
 	$ gw mydoc/Wifi
 	2017.01.03 - why????? forget the reason....
+	2017.02.23 - maybe it can be replaced by autocomplete featuer.
 
 30. Autocomplete with tag name. (feature,minor)
 
