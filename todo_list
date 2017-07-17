@@ -10,7 +10,7 @@ Tasks:
 
 10. refine script install (need add more functions) (refine,minor)
 
-12. sw can import/migate another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,minor)
+12. sw can import/migate another .sw file (i.e. copy e.g. jolin.sw to bob.sw). (feature,none)
 	case 1 for import
 	$ sw -im <.sw file>
 	sw will import tags from <.sw file>, your recent tag data will be deleted.
@@ -34,8 +34,8 @@ Tasks:
 
 15. Add message/note about g2w is tested/only run on bash. (refine,minor)
 
-16. Need remove function. (feature,minor)
-remove what? forget.... un-necessary functions?
+16. Need remove function. (feature,none)
+remove what? forget.... unnecessary functions?
 
 19. Need Make file to automate the pkg creation. (task,minor)
 
@@ -69,6 +69,10 @@ remove what? forget.... un-necessary functions?
 	2017.02.23 - maybe it can be replaced by autocomplete featuer.
 
 30. Autocomplete with tag name. (feature,minor)
+
+31. sw with the same tag name there will be conflict but should not have. (bug,major)
+
+32. Refactor gw. (refine,major)
 
 }}} --------------------------------------------------
 

@@ -7,6 +7,10 @@ Script: sw
 # Function: check_tag
 # Function: roll_back
 # Function: show_usage
+# Function: show_list
+# Function: show_list_by_path
+# Function: show_list_under_tag
+# Function: save_shell_variables_only
 
 # Group: Script version
 # Function: get_script_version
@@ -26,9 +30,10 @@ Script: sw
 # Function: get_tag_names
 # Function: delete_tag_from_list
 # Function: delete_tag
-# Function: check_tag_format
-# Function: check_tag_in_list
+# Function: check_tag_name_format
+# Function: check_tag_name
 # Function: show_tag_info
+# Function: show_roll_back_info
 # Function: show_info
 # Function: add_tag
 # Function: update_tag
@@ -39,26 +44,25 @@ Script: sw
 # Function: unset_tag_in_shell
 # Function: set_shell_variables
 # Function: unset_shell_variables
-
-# Group: Show List
-# Function: show_list
-# Function: show_list_by_path
-# Function: show_list_under_tag
 ------------------------------------------------------------
 #!/bin/bash
 #
 # Script: sw
 # Description:
-# Version: 4.0.20
-# Package Version: 4.0.20
-# Date: 2017.01.06
+# Version: 4.0.24
+# Package Version: 4.0.24
+# Date: 2017.03.10
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
+# Note:
+#	1. Every function must check aborden ($1 -eq -1) in case for process termination
 #
 ## Don't modify here, because the $0 is /bin/bash for alias.
 ##
 # variables #
 # 1 for debug, 0 for no
+# global variables, need to be clean after script terminated
+#shell value conflict
 # functions #
 # Group: High level functions
 #
@@ -76,11 +80,24 @@ main()
 #	- high level function
 #	- perform any needed operations to add tag to system with its path
 #	- not so reusable
-#	- tag name format will be check
-# Input: tag_name
+#	- tag name format will not be checked
+#	- shell variable confliction (sv conflic) of tag name will not be checked
+# Input:
+#	tag_name
+#	sv_conflic
+#		If this tag name is already used as shell variable.
+#			0 for not beused
+#			1 for used but have the same values
+#			2 for used and have different values
+# Output:
+#	N/A
 # Return:
-#	1 for invalid tag name format
-# Usage: save_path tag_name
+#	999
+#		error
+#	0
+#		ok
+#???	1 for invalid tag name format
+# Usage: save_path tag_name sv_conflic
 #
 save_path()
 
@@ -110,6 +127,7 @@ check_tag()
 #
 # Function: roll_back
 # Description:
+# Return:
 # Usage: roll_back
 #
 roll_back()
@@ -119,6 +137,53 @@ roll_back()
 # Function: show_usage
 #
 show_usage()
+
+------------------------------------------------------------
+#
+# Function: show_list
+# Description:
+#	1. Show tag list sorted by tag name.
+#	2. Update shell varialbes.
+# Input: 
+#	0
+#		default, do everything
+#     	1
+#		don't output list info, only update shell variable
+# Usage: show_list
+#	=> <tag1>                 <path1>	<note>
+#	   ...
+#	=> in shell <tag1>=<path1>
+#	   ...
+#
+show_list()
+
+------------------------------------------------------------
+#!!! 
+#
+# Function: show_list_by_path
+# Description: show tag list but sorted by path
+# Usage: show_list_by_path
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_by_path()
+
+------------------------------------------------------------
+#
+# Function: show_list_under_tag
+# Description: 
+#	- show tag which path is under dedicated tag
+# Usage: show_list_under_tag tag_name
+#	=> <tag1>                 <path1>...
+#	=> in shell <tag1>=<path1>...
+#
+show_list_under_tag()
+
+------------------------------------------------------------
+#
+# Function: save_shell_variables_only
+#
+save_shell_variables_only()
 
 ------------------------------------------------------------
 # Group: Script version
@@ -274,18 +339,20 @@ delete_tag_from_list()
 # Output:
 # Return:
 #	0
-#	1 for 
-#	
+#		ok
+#	999
+#		break
 # Usage: delete_tag tag_name
 #	- remove tag record from tag list
 #       - remove tag variable from shell if tag shell value equals
 #         tag path, otherwise tag variable will not be unset
+#	- empty roll back file
 #
 delete_tag()
 
 ------------------------------------------------------------
 #
-# Function: check_tag_format
+# Function: check_tag_name_format
 # Description: 
 #	- check tag name format
 #	- rule: 
@@ -293,31 +360,47 @@ delete_tag()
 #		2. 1 to 20 letters
 #		3. can't contain -
 #		4. can't begin with number
-# Input: tag_name
-# Output: N/A
+# Input:
+#	tag_name
+# Output:
+#	N/A
 # Return:
-#	- 0 for ok
-#	- 1 for no ok
-# Usage: check_tag_format tag_name
-#	=> return 0 for ok
-#	=> return 1 for no ok
+#	0
+#		ok
+#	1
+#		invalid tag name format
+# Usage: check_tag_name_format tag_name
+# Example:
+#	check_tag_name_format abc
 #
-check_tag_format()
+check_tag_name_format()
 
 ------------------------------------------------------------
 #
-# Function: check_tag_in_list
-# Description: check if tag exits in tag list
-# Input: tag_name
+# Function: check_tag_name
+# Description: 
+#	1. Check tag name format. If it is invalid, set error_msg with error message.
+#	2. Otherwise set tag_name with input value
+#	3. If tag name is valid, check if it has path in tag list and set ot tag_path.
+#	4. Check sv conflict and set sv_conflict:
+#		0 for not be used
+#		1 for used but have the same values
+#		2 for used and have different values
+# Input:
+#	tag_name
 # Output:
-#	path
-#	note (reserved)
-# Return: N/A
-# Usage: check_tag_in_list tag_name
-#	=> output path and note of this tag
-#	=> output empty for not found
-# 
-check_tag_in_list()
+#	N/A
+# Return:
+#	0
+#		ok
+#	999
+#		break
+# Usage:
+#	check_tag_name tag_name
+# Example:
+#	check_tag_name abc
+#
+check_tag_name()
 
 ------------------------------------------------------------
 #
@@ -328,14 +411,24 @@ check_tag_in_list()
 #	- this function is suitable for single show, when 
 #	  used in loop will consume lots of time (because 
 #	  get_tag_path is a loop)
-# Input: tag_name
+# Input:
+#	tag_name
+# 	path
 # Output: formated tag_info
-# Usage: show_tag_info tag_name
+# Usage: show_tag_info tag_name path
 #	=> work                 /opt/tools/g2w/work 
 #	or
 #	=> *work                 /opt/tools/g2w/work 
 #
 show_tag_info()
+
+------------------------------------------------------------
+#
+# Function: show_roll_back_info
+# Description:
+# Usage: show_roll_back_info
+#
+show_roll_back_info()
 
 ------------------------------------------------------------
 #
@@ -365,9 +458,15 @@ show_info()
 #	- if conflict, the function will ask user y/n
 #	- if conflict, bypass mode keeps process silent
 #	- if everything ok, tag will add to tag list and shell
+#	- if parameter path exists, path value will replace recent work directory
+#	- if path must be used with mode parameter
 # Input: 
 #	tag_name
-#	0 - for bypass mode, default is 1 for not bypass
+#	bypass
+#		0 - for bypass mode
+#		1 - for interactive mode (default)
+#	path 
+#		path of tag_name
 # Output: N/A
 # Return:
 #	0 for added to list and shell
@@ -378,15 +477,25 @@ show_info()
 #	=> add tag_name and path to tag list
 #	   set tag_name as variable in shell
 #	   return 0
-#	=> add tag_name and path to tag list (add note c as conflict)
+#	=> add tag_name and path to tag list
 #	   return 1
 #	=> do nothing
 #	   return 2
 #	or
 #	add_tag tag_name 0
 #	=> enable bypass mode
+#	or
+#	add_tag tag_name 0 path
+#	=> add tag_name with path in bypass mode
 # 
 add_tag()
+
+------------------------------------------------------------
+#
+#	bypass
+#		0 - for bypass mode
+#		1 - for interactive mode (default)
+add_new_tag()
 
 ------------------------------------------------------------
 #
@@ -436,14 +545,19 @@ update_tag()
 #
 # Function: check_tag_conflict
 # Description
-# Input: tag_name path
+# Input:
+#	N/A
+# Global Variable:
+#	tag_name
+#	tag_path
 # Output:
+#	N/A
 # Return:
-#	0 for conflict
-#	1 for no conflict
+#	0
+#		ok
+#	1 for used but have the same values
+#	2 for used and have different values
 # Usage: check_tag_conflict tag_name path
-#	=> return 0 for conflict
-#	=> return 1 for no conflict
 #
 check_tag_conflict()
 
@@ -502,39 +616,4 @@ set_shell_variables()
 #	=> all tag shell variables are unset
 #
 unset_shell_variables()
-
-------------------------------------------------------------
-# Group: Show List
-# Description:
-#
-# Function: show_list
-# Description: show tag list sorted by tag name
-# Usage: show_list
-#	=> <tag1>                 <path1>	<note>
-#	   ...
-#	=> in shell <tag1>=<path1>
-#	   ...
-#
-show_list()
-
-------------------------------------------------------------
-#
-# Function: show_list_by_path
-# Description: show tag list but sorted by path
-# Usage: show_list_by_path
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
-#
-show_list_by_path()
-
-------------------------------------------------------------
-#
-# Function: show_list_under_tag
-# Description: 
-#	- show tag which path is under dedicated tag
-# Usage: show_list_under_tag tag_name
-#	=> <tag1>                 <path1>...
-#	=> in shell <tag1>=<path1>...
-#
-show_list_under_tag()
 

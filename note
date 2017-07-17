@@ -1,5 +1,11 @@
 g2w - Go to Work folder
 --------------------
+2017.07.06
+- After half year I restart to handle this project. The work now is:
+-> This project must be test driven (TDD) i.e. need test cases and some kind of shell test framework. I will use shUnit2 for unitest. For E2E I have not found the solution yet, maybe I'll develope one when I'm familiar with Kama.
+-> may need to refact update_tag function, perform no check and note in description that user have check before calling this function.
+-> Refact that the tiers of functions must not be over some level (2 or 3)???? In the other words, a function can't call too many functions. (for shell performance)
+
 2017.01.06
 - Finished conflict part, need to rest for long time. The next feature is rollback from failed operation gw aaa to sw aaa.
 - And next time I need to arrange/clean git commits and add tag for version.
