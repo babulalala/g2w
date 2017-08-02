@@ -2,13 +2,18 @@
 #
 # Script: sw
 # Description:
-# Version: 4.1.1
+# Version: 4.1.2
 # Package Version: 4.1.1
-# Date: 2017.07.17
+# Date: 2017.07.18
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 # Note:
-#	1. Every function may check return code ($? -eq 999) in case for process termination.
+#	1. Every function may check error_msg in case for process termination.
+#		#if there is error message, break this function
+#		if [ ! -z "$error_msg" ];then
+#			return 999
+#		fi
+#
 #
 
 ## Don't modify here, because the $0 is /bin/bash for alias.
@@ -31,7 +36,7 @@ tag_path=''
 #shell value conflict
 sv_conflict=''
 tag_shell_value=''
-tag_list=''
+tag_file=''
 
 # functions #
 
@@ -41,8 +46,11 @@ tag_list=''
 #
 # Function: main
 # Description:
-#	- high level function
-# Usage: main
+#	1. Every function starts from here.
+#	2. For source usage we need this main function. Otherwise the shell could accidentally
+#	   terminated.
+# Usage:
+#	main
 #
 main() {				
 	#
@@ -52,8 +60,9 @@ main() {
 	# I keep this main() way.
 	#
 
-	tag_list=`get_tag_file`
+	tag_file=`get_tag_file`
 
+	#no argument then shows tag list
 	if [ $# -eq 0 ];then
 		show_list
 		return 0
@@ -79,9 +88,11 @@ main() {
 		;;
 		-svo) save_shell_variables_only
 		;;
-		-tag) check_tag $2
+		-tag) check_tag_name $2
+		      check_tag
 		;;
-		-u) show_list_under_tag $2
+		-u) check_tag_name $2
+		    show_list_under_tag
 		;;
 		-V) show_version
 		;;
@@ -100,7 +111,7 @@ main() {
 	tag_path=''
 	sv_conflict=''
 	tag_shell_value=''
-	tag_list=''
+	tag_file=''
 
 }
 
@@ -169,47 +180,37 @@ local result=2
 #
 # Function: clean_list
 # Description:
-# Usage: clean_list
-#	=> all tag information are removed from system
+#	1. All tag information will be removed from system.
+#	2. All tag shell variables will be unset.
+#	3. All tag info will be purged from tag list.
+# Usage:
+#	clean_list
 #
 clean_list() {
 	unset_shell_variables
-	local list=`get_tag_file`
-	>$list
+	>$tag_file
 }
 
 #
 # Function: check_tag
 # Description:
-# Input: tag_name
+#	Show info about given tag, output empty if there is no info.
+# Input:
 # Output:
-# Return: N/A
-# Usage: check_tag tag_name
+# Return:
+# Usage:
+#	check_tag
 # 	find => angl                 /var/www/html/angl
 #	no find => N/A
 # 
 check_tag() {
-	local tag_name=$1
-
-	#debug
-	if [ $debug -eq 1 ];then
-		echo "$FUNCNAME: tag_name=$tag_name"
-		#read
+	#if there is error message, break this function
+	if [ ! -z "$error_msg" ];then
+		return 999
 	fi
 
-	check_tag_name_format $tag_name
-	local result=$?
-	
-	if [ $result -eq 1 ];then
-		echo "invalid tag name format"
-		return 1
-	fi
-
-	#if tag is already in tag list?
-	local path=`get_tag_path $tag_name`
-
-	if [ ! -z "$path" ];then		#tag is in list
-		show_tag_info $tag_name "$path"
+	if [ ! -z "$tag_path" ];then		#tag is in list
+		show_tag_info
 	else
 		:;	#do nothing :)
 	fi
@@ -294,7 +295,8 @@ here
 #	flag
 #		0	default, do everything
 #     		1	don't output list info, only update shell variable
-# Usage: show_list
+# Usage:
+#	show_list
 #
 show_list() {
 	local flag=0
@@ -339,13 +341,6 @@ show_list() {
 	# 	show_info $name $path
 	# done<$list
 
-	# !DON'T MODIFY HERE!
-	#show tag info and add conflict flag
-
-	#0 for tag_name
-	#1 for tag_path
-	monitor=0
-
 	#
 	# 2017.03.10
 	# There is an issue here. When path contains whitespace, the $list will be parsed unexpacted
@@ -368,7 +363,7 @@ show_list() {
 #"
 ##!!! 
 #
-#	for line in `sort $tag_list`
+#	for line in `sort $tag_file`
 #	do
 #		tag_name=`echo $line|cut -d ',' -f 1`		<< this two cause performance slow down
 #		tag_path=`echo $line|cut -d ',' -f 2`		<<
@@ -392,18 +387,62 @@ show_list() {
 #
 # End of comment
 
-	local IFS_ORG=$IFS
-	IFS=,
+	#
+	# 2017.07.19
+	# "Houston, we got a problem."
+	# Just found these codes have an issue that set_tag_in_shell will not work.
+	# Because seems piple (|) will involk sub-shell for while. In order to set variable
+	# in parent shell and sort the output, I modified the code again.
+# start comment
+#
+#	local IFS_ORG=$IFS
+#	IFS=,
+#
+#	sort $tag_file|while read line
+#	do
+#		local tag_info=($line)
+#		tag_name=${tag_info[0]}
+#		tag_path=${tag_info[1]}
+#
+#		check_tag_conflict
+#
+#		#if [ ! $SHLVL -gt 1 ];then
+#		if [ $SHLVL -gt -1 ];then
+#			if [ $sv_conflict -eq 0 ];then
+#				set_tag_in_shell
+#			fi
+#		fi
+#
+#		case $flag in
+#			1) :;;	#don't show tag info
+#			*) show_info;;	#show tag info
+#		esac
+#	done
+#
+#	IFS=$IFS_ORG
+# End of comment
 
-	sort $tag_list|while read line
+	IFS_ORG=$IFS
+	#set "breakline" as input file seperator
+	#!!! Don't modify here !!!
+	IFS="
+"
+#!!! 
+
+	for line in `sort $tag_file`
 	do
+		local IFS_LAST=$IFS
+		IFS=,
+
 		local tag_info=($line)
 		tag_name=${tag_info[0]}
 		tag_path=${tag_info[1]}
 
 		check_tag_conflict
 
-		if [ ! $SHLVL -gt 1 ];then
+		if [ $SHLVL -gt 1 ];then	#we are in sub-shell
+			:;			#do nothing
+		else
 			if [ $sv_conflict -eq 0 ];then
 				set_tag_in_shell
 			fi
@@ -411,8 +450,10 @@ show_list() {
 
 		case $flag in
 			1) :;;	#don't show tag info
-			*) show_info;;	#show tag info
+			*) show_tag_info;;	#show tag info
 		esac
+
+		IFS=$IFS_LAST
 	done
 
 	IFS=$IFS_ORG
@@ -426,8 +467,7 @@ show_list() {
 #	=> in shell <tag1>=<path1>...
 #
 show_list_by_path() {
-	local list=`get_tag_file`
-
+	local list=`get_tag_file` 
 	#debug
 	#cat -A $list
 
@@ -466,59 +506,62 @@ show_list_by_path() {
 #
 # Function: show_list_under_tag
 # Description: 
-#	- show tag which path is under dedicated tag
-# Usage: show_list_under_tag tag_name
+#	1. Shows tags which pathes is under dedicated tag.
+# Usage:
+#	show_list_under_tag
 #	=> <tag1>                 <path1>...
 #	=> in shell <tag1>=<path1>...
 #
 show_list_under_tag(){
-	local tag_name=$1
-	local list=`get_tag_file`
-
-	#check tag format
-	check_tag_name_format $tag_name
-	local result=$?
-	
-	if [ $result -eq 1 ];then
-		echo "invalid tag name format"
-		return 1
+	#if there is error message, break this function
+	if [ ! -z "$error_msg" ];then
+		return 999
 	fi
 
-	#get tag path
-	local path=`get_tag_path $tag_name`
-
-	if [ ! -z "$path" ];then
+	#tag path exists
+	if [ ! -z "$tag_path" ];then
 	
 		# 2017.01.06
 		#
 		#grep ",$path" $list|sort -t ',' -k 2,2|perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);'
 		#set_shell_variables
-
-		# !DON'T MODIFY HERE!
-		#compare path with other pathes
-		local name
-		local path
-
-		#0 for name
-		#1 for path
-		monitor=0
-
-		for line in `grep ",$path" $list|sort -t ',' -k 2,2|sed -s 's/,/ /g'`
-		do
-			if [ $monitor -eq 0 ];then
-				name=$line
-				monitor=1
-				continue
-			fi	
-
-			if [ $monitor -eq 1 ];then
-				path=$line
-				monitor=0
-				set_tag_in_shell $name "$path"
-				show_info $name "$path"
-			fi
-		done
 		#
+
+		# 2017.08.02
+		#for line in `grep ",$tag_path" $tag_file|sort -t ',' -k 2,2|sed -s 's/,/ /g'`
+		#
+
+		local tag_file_temp=/tmp/$script_name-tag_file_temp
+		grep ",$tag_path" $tag_file|sort -t ',' -k 2,2>$tag_file_temp
+
+		#debug
+		#cat $tag_file_temp
+
+		while read line
+		do
+			local IFS_ORG=$IFS
+			IFS=,
+
+			local tag_info=($line)
+			tag_name=${tag_info[0]}
+			tag_path=${tag_info[1]}
+
+			check_tag_conflict
+
+			if [ $SHLVL -gt 1 ];then	#we are in sub-shell
+				:;			#do nothing
+			else
+				if [ $sv_conflict -eq 0 ];then
+					set_tag_in_shell
+				fi
+			fi
+
+			show_tag_info;	#show tag info
+
+			IFS=$IFS_ORG
+		done<$tag_file_temp
+
+		rm -f $tag_file_temp
 	fi
 }
 
@@ -598,30 +641,33 @@ get_username() {
 
 #
 # Function: check_path
-# Description: check if recent work path already exists in tag list
-# Input: N/A
-# Output: formated tag and path information
-# Usage: check_path
+# Description: Check if recent work path already exists in tag list.
+# Input:
+# Output:
+#	Formated tag and path information.
+# Usage:
+#	check_path
 #	=> angl                 /var/www/html/angl
 #	or
 #	=> empty if not in tag list
 #
 check_path() {
-	local list=`get_tag_file`
-	local work_path=`pwd`
+	tag_path=`pwd`
 
+	#
 	# 2017.01.06
 	# Change to use show_tag_info, although for loop is slowly.
 	#
 	#grep ,$work_path$ $list |perl -ne 'chomp;@s=split(/,/);printf("%-20s %-20s\n",$s[0],$s[1]);' -
+	#
 
-	local tag_names=`get_tag_name $work_path`
+	local tag_names=`get_tag_names_by_path`
 
 	if [ ! -z "$tag_names" ];then
-		local name
-		for name in $tag_names
+		for tag_name in $tag_names
 		do
-			show_tag_info $name "$work_path"
+			check_tag_conflict
+			show_tag_info
 		done
 	fi
 }
@@ -682,7 +728,7 @@ get_tag_file() {
 #	get_tag_path tmp
 #
 get_tag_path() {
-	local cmd="grep '^$tag_name\b' $tag_list"
+	local cmd="grep '^$tag_name\b' $tag_file"
 	local info=`eval $cmd`
 	
 	if [ ! -z "$info" ];then
@@ -704,27 +750,24 @@ get_tag_pathes() {
 }
 
 #
-# Function: get_tag_name
-#
-# Usage: get_tag_name path
-#	=> tag name
+# Function: get_tag_names_by_path
+# Description:
+#	Return tag names of given tag path
+# Usage:
+#	get_tag_name path
+#	=> tag names
 #	or
 #	=> emtpy for not found
 #
-get_tag_name() {
-	local path=$1
-	local list=`get_tag_file`
-
-	grep ,$work_path$ $list |cut -d ',' -f 1
+get_tag_names_by_path() {
+	grep ",$tag_path$" $tag_file |cut -d ',' -f 1
 }
 
 #
 # Function: get_tag_names
 # Description:
 #	- default in alphabetical order
-# Input: N/A
-# Output: sorted list of all tag names in tag list
-# Usage: get_tag_names
+# Input: N/A # Output: sorted list of all tag names in tag list # Usage: get_tag_names
 #	=> output tag name list
 #
 get_tag_names() {
@@ -746,7 +789,7 @@ get_tag_names() {
 #
 delete_tag_from_list(){
 	if [ ! -z "$tag_path" ];then	#find tag in list
-		cmd="sed -i '/^$tag_name,.\+/d' $tag_list"
+		cmd="sed -i '/^$tag_name,.\+/d' $tag_file"
 		eval $cmd
 		return 0
 	else
@@ -773,7 +816,6 @@ delete_tag_from_list(){
 #
 delete_tag() {
 	if [ -z $tag_name ];then
-		show_usage
 		return 999
 	fi
 
@@ -886,16 +928,14 @@ check_tag_name() {
 #
 # Function: show_tag_info
 # Description:
-#	- show tag all information
-#	- note if tag has shell variable conflict
-#	- this function is suitable for single show, when 
-#	  used in loop will consume lots of time (because 
-#	  get_tag_path is a loop)
+#	1. Show tag all information.
+#	2. Note if tag has shell variable conflict.
+#	3. This function is suitable for single display.
 # Input:
-#	tag_name
-# 	path
-# Output: formated tag_info
-# Usage: show_tag_info tag_name path
+# Output:
+#	formated tag_info
+# Usage:
+#	show_tag_info tag_name path
 #	=> work                 /opt/tools/g2w/work 
 #	or
 #	=> *work                 /opt/tools/g2w/work 
@@ -925,29 +965,6 @@ show_roll_back_info() {
 		local path=`echo $data|cut -d ',' -f 2`
 		show_info $tag_name "$path"
 	fi
-}
-
-#
-# Function: show_info
-# Description:
-#	1. Show information of tag name.
-#	2. Note if tag has shell variable conflict.
-#	3. This function doesn't check sv conflict.
-# Input: 
-# Output:
-#	formated tag info
-# Usage: show_info
-#	=> work                 /opt/tools/g2w/work 
-#	or
-#	=> *work                 /opt/tools/g2w/work 
-#
-show_info() {
-	#is conflict
-	if [ $sv_conflict -eq 2 ];then
-		echo -n '*'
-	fi
-
-	printf "%-20s %-20s\n" $tag_name "$tag_path";
 }
 
 #
@@ -1059,14 +1076,14 @@ add_new_tag() {
 
 	#set tag as shell variable
 	if [ $sv_conflict -eq 0 ];then		#not used
-		echo $data>>$tag_list
+		echo $data>>$tag_file
 		set_tag_in_shell
 		return 0
 	fi
 
 	if [ $sv_conflict -eq 1 ];then		#the same values
 		#add to tag list only
-		echo $data>>$tag_list	
+		echo $data>>$tag_file	
 		return 0
 	fi
 
@@ -1084,7 +1101,7 @@ add_new_tag() {
 		#need to refine here, for Y,y,yes....
 		if [ "$answer" == y ];then	#user wants to add tag to tag list only
 			#add tag data to tag list
-			echo "$data">>$tag_list
+			echo "$data">>$tag_file
 			return 0
 		else
 			return 2	#do nothing
@@ -1257,24 +1274,35 @@ set_shell_variables() {
 
 #
 # Function: unset_shell_variables
-# Description:
+# Description: All tag shell variables will be unset.
 # Usage: unset_shell_variables
-#	=> all tag shell variables are unset
 #
 unset_shell_variables() {
-	local file=`get_tag_file`
-	local list=`cat $file`
-	local IFS_org=$IFS
+#	local list=`cat $tag_file`
+#	local IFS_org=$IFS
+#
+#	for data in $list
+#	do
+#		IFS=','
+#		local data_arr=($data)
+#		IFS=$IFS_org
+#		local tag=${data_arr[0]}
+#		
+#		unset_tag_in_shell $tag
+#	done
 
-	for data in $list
+	local IFS_ORG=$IFS
+	IFS=,
+
+	while read line
 	do
-		IFS=','
-		local data_arr=($data)
-		IFS=$IFS_org
-		local tag=${data_arr[0]}
+		local tag_info=($line)
+		tag_name=${tag_info[0]}
 		
-		unset_tag_in_shell $tag
-	done
+		unset_tag_in_shell
+	done<$tag_file
+
+	IFS=$IFS_ORG
 }
 
 # main #

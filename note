@@ -1,5 +1,9 @@
 g2w - Go to Work folder
 --------------------
+2017.08.02
+- refactor clean_list
+- refactor sw -u
+
 2017.07.06
 - After half year I restart to handle this project. The work now is:
 -> This project must be test driven (TDD) i.e. need test cases and some kind of shell test framework. I will use shUnit2 for unitest. For E2E I have not found the solution yet, maybe I'll develope one when I'm familiar with Kama.
