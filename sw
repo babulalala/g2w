@@ -2,9 +2,9 @@
 #
 # Script: sw
 # Description:
-# Version: 4.1.2
+# Version: 4.1.4
 # Package Version: 4.1.1
-# Date: 2017.07.18
+# Date: 2017.08.04
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 # Note:
@@ -33,10 +33,22 @@ debug=0
 error_msg=''
 tag_name=''
 tag_path=''
+
 #shell value conflict
 sv_conflict=''
+
 tag_shell_value=''
 tag_file=''
+roll_back_file=''
+
+#true, clean up roll back file before termination
+#false, don't clean up
+#keep this default false
+clean_roll_back_file='false'
+
+#special tag
+#.
+sp_tag=''
 
 # functions #
 
@@ -61,57 +73,67 @@ main() {
 	#
 
 	tag_file=`get_tag_file`
+	roll_back_file=`get_roll_back_file`
 
 	#no argument then shows tag list
 	if [ $# -eq 0 ];then
 		show_list
-		return 0
+	else
+		case $1 in
+			.) check_path
+			;;
+			-c) clean_list
+			;;
+			-d) check_tag_name $2
+			    delete_tag
+			;;
+			-gf) get_tag_file
+			;;
+			-h) show_usage
+			;;
+			-r) show_list_by_path
+			;;
+			-rb) roll_back
+			;;
+			-srb) show_roll_back_info
+			;;
+			-svo) save_shell_variables_only
+			;;
+			-tag) check_tag_name $2
+			      check_tag
+			;;
+			-u) check_tag_name $2
+			    show_list_under_tag
+			;;
+			-V) show_version
+			;;
+			*) check_tag_name $1
+			   save_path
+			;;
+		esac
 	fi
-
-	case $1 in
-		.) check_path
-		;;
-		-c) clean_list
-		;;
-		-d) check_tag_name $2
-		    delete_tag
-		;;
-		-gf) get_tag_file
-		;;
-		-h) show_usage
-		;;
-		-r) show_list_by_path
-		;;
-		-rb) roll_back
-		;;
-		-srb) show_roll_back_info
-		;;
-		-svo) save_shell_variables_only
-		;;
-		-tag) check_tag_name $2
-		      check_tag
-		;;
-		-u) check_tag_name $2
-		    show_list_under_tag
-		;;
-		-V) show_version
-		;;
-		*) check_tag_name $1
-		   save_path
-		;;
-	esac
 
 	if [ ! -z "$error_msg" ];then
 		echo $error_msg
 	fi
 
-	#clean global variables
+	#clean up
+	#roll back file
+	#If the operation is not update, we purge roll back file content.
+	if [ "$clean_roll_back_file" == 'true' ];then
+echo here
+		>$roll_back_file
+	fi
+
+	#global variables
 	error_msg=''
 	tag_name=''
 	tag_path=''
 	sv_conflict=''
 	tag_shell_value=''
 	tag_file=''
+	is_update=''
+	clean_roll_back_file='false'
 
 }
 
@@ -145,32 +167,12 @@ save_path() {
 		return 999
 	fi
 
-	local roll_back_file=`get_roll_back_file`
-
 	if [ ! -z "$tag_path" ];then	#tag is in list, update it with new path
 		update_tag
 
-		#only update needs roll back
-		#!!!need refact here later
-local result=2
-		if [ ! $result -eq 2 ];then	#updated anyway
-			if [ "$path" == `pwd` ];then	#path equals recent work directory
-				#empty roll back file
-				>$roll_back_file
-			else
-				#add old path to roll back file
-				echo -n "$tag_name,$path" > $roll_back_file
-			fi
-		else
-			#empty roll back file
-			>$roll_back_file
-		fi
 	else	#new tag, add it
 		tag_path=`pwd`
 		add_new_tag 1
-
-		#empty roll back file anyway
-		>$roll_back_file
 	fi
 
 	#show info of this new tag
@@ -194,14 +196,14 @@ clean_list() {
 #
 # Function: check_tag
 # Description:
-#	Show info about given tag, output empty if there is no info.
+#	1. Show info about given tag, output empty if there is no info.
 # Input:
 # Output:
 # Return:
 # Usage:
 #	check_tag
 # 	find => angl                 /var/www/html/angl
-#	no find => N/A
+#	no find => (empty)
 # 
 check_tag() {
 	#if there is error message, break this function
@@ -223,18 +225,17 @@ check_tag() {
 # Usage: roll_back
 #
 roll_back() {
-	local roll_back_file=`get_roll_back_file`
-	local data=`cat $roll_back_file`
-
-	if [ -z "$data" ];then	#no roll back data
+	if [ ! -s "$roll_back_file" ];then	#emtpy, no roll back data
 		:;		#do nothing
 	else
-		local tag_name=`echo $data|cut -d ',' -f 1`
-		local path=`echo $data|cut -d ',' -f 2`
+		tag_name=`cat $roll_back_file|cut -d ',' -f 1`
+		local old_path=`cat $roll_back_file|cut -d ',' -f 2`
 
-		delete_tag $tag_name
-		add_tag $tag_name 0 "$path"
-		show_info $tag_name "$path"
+		delete_tag
+		tag_path=$old_path
+		check_tag_conflict
+		add_new_tag 0	#add tag in bypass
+		show_tag_info
 	fi
 }
 	
@@ -507,6 +508,7 @@ show_list_by_path() {
 # Function: show_list_under_tag
 # Description: 
 #	1. Shows tags which pathes is under dedicated tag.
+#	2. If special tag is set to ., this function will show tags under current folder.
 # Usage:
 #	show_list_under_tag
 #	=> <tag1>                 <path1>...
@@ -517,6 +519,16 @@ show_list_under_tag(){
 	if [ ! -z "$error_msg" ];then
 		return 999
 	fi
+
+	#handle special tag if exists
+	case $sp_tag in
+		.)	#search under current folder
+		   tag_path=`pwd`
+		   echo "($tag_path)"
+		;;
+		*) :;	#do nothing
+		;;
+	esac
 
 	#tag path exists
 	if [ ! -z "$tag_path" ];then
@@ -532,7 +544,8 @@ show_list_under_tag(){
 		#
 
 		local tag_file_temp=/tmp/$script_name-tag_file_temp
-		grep ",$tag_path" $tag_file|sort -t ',' -k 2,2>$tag_file_temp
+
+		grep ",$tag_path" $tag_file|sort -t ',' -k 2,2>>$tag_file_temp
 
 		#debug
 		#cat $tag_file_temp
@@ -675,8 +688,8 @@ check_path() {
 # 
 # Function: get_roll_back_file
 # Description:
-#	- return full path of user's roll back file
-# 	- if file doesn't exist, an empty file will be created
+#	1. Return full path of user's roll back file.
+# 	2. If file doesn't exist, an empty file will be created.
 # Input: N/A
 # Output: full path of user's roll back file
 #	  e.g /tmp/root.sw.rb
@@ -788,7 +801,7 @@ get_tag_names() {
 #	delete_tag
 #
 delete_tag_from_list(){
-	if [ ! -z "$tag_path" ];then	#find tag in list
+	if [ ! -z "$tag_name" ];then	#find tag in list
 		cmd="sed -i '/^$tag_name,.\+/d' $tag_file"
 		eval $cmd
 		return 0
@@ -811,8 +824,7 @@ delete_tag_from_list(){
 #		ok
 #	999
 #		break
-# Usage: delete_tag tag_name
-#	???- empty roll back file
+# Usage: delete_tag
 #
 delete_tag() {
 	if [ -z $tag_name ];then
@@ -826,8 +838,8 @@ delete_tag() {
 
 	delete_tag_from_list
 
-	local roll_back_file=`get_roll_back_file`
-	>$roll_back_file
+	#clean up roll back file if tag name exists
+	sed -i "/^$tag_name,/d" $roll_back_file
 
 	#after delete tag don't need to show the tag list
 	#especially when there are lots of tags
@@ -841,12 +853,13 @@ delete_tag() {
 #
 # Function: check_tag_name_format
 # Description: 
-#	- check tag name format
-#	- rule: 
+#	1. This function checks tag name format.
+#	2. Tag name format rule: 
 #		1. ^[a-zA-Z_][\w_]{0,19}\$
 #		2. 1 to 20 letters
 #		3. can't contain -
 #		4. can't begin with number
+#	3. Failed if tag name is empty.
 # Input:
 #	tag_name
 # Output:
@@ -856,7 +869,8 @@ delete_tag() {
 #		ok
 #	1
 #		invalid tag name format
-# Usage: check_tag_name_format tag_name
+# Usage:
+#	check_tag_name_format tag_name
 # Example:
 #	check_tag_name_format abc
 #
@@ -892,6 +906,7 @@ check_tag_name_format() {
 #		0 for not be used
 #		1 for used but have the same values
 #		2 for used and have different values
+#	5. Check if tag name is special tag then set sp_tag, e.g. sp_tag='.'.
 # Input:
 #	tag_name
 # Output:
@@ -907,6 +922,14 @@ check_tag_name_format() {
 #	check_tag_name abc
 #
 check_tag_name() {
+	#check if tag name is special tag
+	#
+	case $1 in
+		.) sp_tag='.';return 0
+		;;
+		*) :;	#do nothing
+	esac
+
 	check_tag_name_format $1
 	local result=$?
 	
@@ -952,18 +975,19 @@ show_tag_info() {
 #
 # Function: show_roll_back_info
 # Description:
+#	1. Show roll back file information.
 # Usage: show_roll_back_info
 #
 show_roll_back_info() {
-	local roll_back_file=`get_roll_back_file`
-	local data=`cat $roll_back_file`
-
-	if [ -z "$data" ];then
+	if [ ! -s $roll_back_file ];then	#roll back file is empty
 		:;		#do nothing
 	else
-		local tag_name=`echo $data|cut -d ',' -f 1`
-		local path=`echo $data|cut -d ',' -f 2`
-		show_info $tag_name "$path"
+		local tag_name=`cat $roll_back_file|cut -d ',' -f 1`
+		local tag_path=`cat $roll_back_file|cut -d ',' -f 2`
+	
+		#we don't need to handle sv_conflict
+		sv_conflict=0
+		show_tag_info
 	fi
 }
 
@@ -1066,6 +1090,11 @@ add_tag() {
 # Input:
 #	0	for bypass mode
 #	1	for interactive mode (default)
+# Usage:
+#	add_new_tag [mode]
+# Examples:
+#	add_new_tag 0	=> add new tag in bypass mode
+#
 add_new_tag() {
 	local bypass=$1
 	local data=$tag_name,$tag_path
@@ -1115,18 +1144,21 @@ add_new_tag() {
 #	1. Tag will be deleted and then added.
 #	2. This function will not check if tag exists in tag list
 #	3. This function will not check tag format or cv confilict.
+#	4. Prepare roll back info.
 # Input: 
 # Output:
 # Return:
-#  !!! for roll back, this is in older version, don't know if need now
-#	0 for update to list and shell
-#	1 for update to list only
-#	2 no update
-#	!!!!
-# Usage: update_tag
+# Usage:
+#	update_tag
 #
 update_tag() {
 	delete_tag
+
+	#for roll back
+	#add old path to roll back file
+	echo -n "$tag_name,$tag_path" > $roll_back_file
+	#
+
 	#set pwd to tag path
 	tag_path=`pwd`
 	add_new_tag 1

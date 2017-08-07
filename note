@@ -1,8 +1,31 @@
 g2w - Go to Work folder
 --------------------
+2017.08.07
+- need to refactor gw
+
+2017.08.04
+*- need to refactor sw rollback
+ 
+2017.08.03
+*- sw -u . => show under current path
+- need to refactor gw later
+- if tag doesn't exist, gw may show related info
+e.g.
+$ gw lab
+lab1		/xxx/eee/sss
+my_lab		/xxx/yyy/xxxx
+sunbird_lab	/xxx/xxx/xxx
+- need to refactor sw rollback
+- need to start autocompletion
+ 
 2017.08.02
-- refactor clean_list
-- refactor sw -u
+*- refactor clean_list
+*- refactor sw -u
+- sw -u . => show under current path
+- sw -fnd lab =>
+lab	xxxx
+lab2	xxxx
+sunbird_lab	xxxx
 
 2017.07.06
 - After half year I restart to handle this project. The work now is:
