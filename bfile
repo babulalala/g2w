@@ -1,0 +1,162 @@
+#!/bin/bash
+#
+# Script: bfiles
+# Description: Functions for handling files and folders.
+# Version: 1.0.4
+# Date: 2017.10.25
+# Update:
+#	1.0.2	1. Add function check_file_existance.
+#		2. Update file filter_file to read from stdin.
+#	1.0.3	1. Refactor check_file_existance and filter_file.
+#	1.0.4	1. Modify script name from btools to bfiles.
+# Note:
+#	1. Functions should be abale be called directly.
+#	e.g. /usr/local/lib/btools filter_file file1 file2
+#
+
+script_full_name=`basename $0`
+script_name=`basename $0 .sh`
+
+## check_file_existance ##
+files_file=/tmp/$script_name.files_file
+#clean up
+rm $files_file &>/dev/null
+
+#
+# Function: add_files_to_files_file
+# Description:
+# Note:
+#	1. This function doesn't call filter_file.
+# Global Variable:
+#	files_file	file contains a list of filename with path
+# Return:
+#	1	no files list or files list doesn't exist
+# Usage:
+#	add_files_to_files_file -f <files list>
+#	add_files_to_files_file <file with path>
+#
+add_files_to_files_file() {
+	if [ $# -eq 0 ];then	#no argument
+		return 1	#do nothing
+	fi
+
+	local files_list
+	
+	if [ "$1" == '-f' ];then	#case for input from file
+		if [ -z "$2" ];then	#no files list
+			echo "input file is empty"
+			return 1	
+		else			#has files list
+			files_list="$2"
+			if [ "$files_list" == '-' ];then 	#case for stdin
+				cat /dev/stdin >> $files_file
+			else					#normal file
+				if [ -f "$files_list" ];then
+					cat "$files_list" >> $files_file
+				else
+					echo "$files_list doesn't exist"
+					return 1	#files list doesn't exist
+				fi
+			fi
+		fi
+	else				#case for input from argument
+		echo "$1" >> $files_file
+	fi
+}
+
+#
+# Function: check_file_existance
+# Description: Check file existance from files file.
+# Global Variable:
+#	files_file	file contains a list of filename with path
+# Return:
+#	1	no input or can't find files file
+#	2	at least one file deosn't exist
+# Input:
+#	files file
+#		file contains a list of files
+# Usage:
+#	check_file_existance -f <files file>
+#	check_file_existance <file> [file]...
+#	check_file_existance -f <files file> <file> [file]...
+#	check_file_existance -f <files file1> -f <files file2> [file]...
+#
+check_file_existance() {
+	if [ $# -eq 0 ];then	#no argument
+		return 1	#do nothing
+	fi
+
+	#clean up
+	rm $files_file &>/dev/null
+
+	local no_found_file=/tmp/$FUNCNAME.no_found_file
+	#clean up
+	rm $no_found_file &>/dev/null
+
+	while [ ! -z "$1" ]
+	do
+		case "$1" in
+			-f) shift
+			    add_files_to_files_file -f "$1"
+			    [ $? -eq 1 ] && return 1
+			    shift
+			    ;;
+			*) add_files_to_files_file "$1"
+			    [ $? -eq 1 ] && return 1
+			    shift
+			    ;;
+		esac
+	done
+
+	filter_file "$files_file" |while read file
+	do
+		echo -n "check file existance: $file ... "
+
+		if [ ! -f "$file" ];then
+			>$no_found_file
+			echo no
+		else
+			echo ok
+		fi
+	done
+
+	if [ -f $no_found_file ];then
+		rm $no_found_file
+		return 2
+	fi	
+}
+
+#
+# Function: filter_file
+# Description: Filter out comments (#), empty lines from file.
+# Return:
+#	1	no input or can't find file
+# Usage:
+#	filter_file <file>
+#
+filter_file(){
+	local file
+
+	#set input from stdin if:
+	# no argumenet
+	# argument is -
+	if [ -z "$1" ] || [ "$1" == "-" ];then
+		file=/dev/stdin
+	else
+		file="$1"
+	fi
+
+	#check files existance except /dev/stdin
+	if [ ! "$file" == "/dev/stdin" ] && [ ! -f "$file" ];then
+		#file not found
+		return 1
+	fi
+
+	while read line
+	do
+		echo "$line"|grep -e '^#' -e '^$' &>/dev/null && continue
+		echo "$line"
+	done<$file
+}
+
+## End of Script ##

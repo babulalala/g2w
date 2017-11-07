@@ -2,12 +2,18 @@
 #
 # Script: gw
 # Descript: Change user work directory
-# Version: 4.0.2
-# Package Version: 4.0.23
-# Date: 2017.03.10
+# Version: 4.1.0
+# Package Version: 4.1.x
+# Date: 2017.10.31
+# Update:
+#	4.0.3	1. Fix tag_folder value from /tmp to ~.
+#	4.1.0	1. Refactor script.
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 # Note:
+#	1. No duplicated function from sw. Because both functions are sourced and will influance to each other.
+#	2. Functions used from sw:
+#		get_script_version
 #
 
 script_name=gw
@@ -15,21 +21,18 @@ script_full_name=gw
 this_file=/usr/local/bin/$script_full_name
 sw_file=/usr/local/bin/sw
 
-get_version() {
-        local version=`grep '^# Version:' $this_file|cut -d ' ' -f 3`
-        echo $version
-}
-
-version=`get_version`
-
-tag_folder=/tmp
+tag_folder=~
 
 #
 show_usage() {
-        cat<<here
-$script_full_name, v$version
+	local version=`get_script_version`
+	local pkg_version=`get_pkg_version`
 
-Change work directory to target tag
+        cat<<here
+$script_full_name, v$gw_version
+g2w package, $pkg_version
+
+Change work directory to tagged path.
 
 Usage: $script_full_name [<tag>|-c|-d <tag>|-h|-V]
 
@@ -37,7 +40,7 @@ tag	    composed of [a-zA-Z0-9_-]
 
 Options
   N/A	    show tags info
-  tag	    go to tag's directory
+  tag	    go to tagged path
   -c        clean (delete) all tags in path list.
   -d tag    delete tag in path list.
   -h        show this help
@@ -45,13 +48,17 @@ Options
 
 EXAMPLE
   $script_full_name
-  $script_full_name a
-  $script_full_name -d b
+  $script_full_name work_folder
+  $script_full_name -d work_folder
   $script_full_name -c
 
 here
 }
 
+#
+# Function: go_to
+# Description:
+#
 go_to() {
 	local tag_name=$1
 
@@ -71,10 +78,6 @@ go_to() {
 		cd "$path"
 		pwd
 	fi
-}
-
-show_version() {
-	echo $version
 }
 
 ## Main ##

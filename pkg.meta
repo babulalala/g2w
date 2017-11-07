@@ -1,0 +1,15 @@
+#
+# pkg.meta
+#
+# package name should equal to folder name
+name=g2w
+
+# package release version
+version=
+
+# summary about this package
+summary=
+
+# description about this package
+description="I'm really lazy to write such things....."
+

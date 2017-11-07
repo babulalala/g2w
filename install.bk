@@ -1,0 +1,159 @@
+#!/bin/bash
+#
+# Script: install
+# Description: install script for g2w
+# Version: 4.0.8
+# Package Version: 4.0.14
+# Date: 2016.08.01
+#
+
+bin_folder=/usr/local/bin
+source_files="sw gw"
+
+# functions #
+check_result() {
+	local cmd=$1
+	eval $cmd
+
+	if [ $? -eq 0 ];then
+		echo ok
+	else
+		echo error
+	fi
+}
+
+set_alias_centos() {
+	local login_script_name=g2w.sh
+	local login_shell_folder=/etc/profile.d
+	local login_script=./$login_script_name
+	local cmd=
+
+	if [ -f $login_script ];then
+		echo -n "copy $login_script to $login_shell_folder ... "
+		cmd="cp $login_script $login_shell_folder"
+		check_result "$cmd"
+	else
+		echo "can't find $login_script"
+	fi
+}
+
+set_alias_cygwin() {
+	local login_script_name=bash.bashrc
+	local login_shell_folder=/etc
+	local login_script=$login_shell_folder/$login_script_name
+
+	local cmd1="alias sw='source sw'"
+	local cmd2="alias gw='source gw'"
+	local cmd3="sw -svo"
+
+	local cmd=
+
+	if [ -r $login_script ];then
+		grep "$cmd1" $login_script >/dev/null 2>&1
+		
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd1 to $login_script .... "
+			cmd="echo \"$cmd1\" >> $login_script"
+			check_result "$cmd"
+		fi
+
+		grep "$cmd2" $login_script >/dev/null 2>&1
+
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd2 to $login_script .... "
+			cmd="echo \"$cmd2\" >> $login_script"
+			check_result "$cmd"
+
+		fi
+
+		grep "$cmd3" $login_script >/dev/null 2>&1
+
+		if [ ! $? -eq 0 ];then
+			echo -n "add $cmd3 to $login_script .... "
+			cmd="echo \"$cmd3\" >> $login_script"
+			check_result "$cmd"
+
+		fi
+
+	else
+		echo 'alias sw="source sw"' >> $login_script
+		echo 'gw="source gw"' >> $login_script
+		echo 'sw -svo' >> $login_script
+	fi
+}
+
+set_alias() {
+	echo -n "checking OS .... "
+
+	local os=`uname -o`
+
+	echo $os
+
+	case $os in
+		Cygwin) set_alias_cygwin
+		;;
+		GNU/Linux) set_alias_centos
+		;;
+		*) echo "Sorry, we don't support your system now."
+		   exit 0
+		;;
+	esac
+}	
+
+show_messages() {
+	cat <<here
+
+Please re-login the terminal to affect the functions.
+here
+
+}
+
+check_source() {
+	echo -n "check source .... "
+
+	local file=
+
+	for file in $source_files
+	do
+		if [ ! -f $file ];then
+			echo lacks $file
+			exit 1
+		fi
+	done
+
+	echo ok
+
+}
+
+copy_files() {
+	echo -n "copy gw to $bin_folder .... "
+	local cmd="cp -f gw $bin_folder"
+	check_result "$cmd"
+
+	#
+	echo -n "copy sw to $bin_folder .... "
+	cmd="cp -f sw $bin_folder"
+	check_result "$cmd"
+}
+
+#
+main() {
+	cd `dirname $0`
+
+	# check source files in this folder
+	check_source
+
+	# copy files to destinations
+	copy_files
+	# set alias
+
+	set_alias
+
+	# show messasges
+	show_messages
+}
+
+# main #
+main
+
+## End of Script ##

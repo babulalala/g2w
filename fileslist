@@ -1,0 +1,20 @@
+#
+# fileslist
+# 
+# If you don't want no overwrite the existing file, you can add * before file name. Or add before section then all 
+# files in this section will not be overwritten. (not finish section part yet)
+#
+# If you eant to change file name, you can use the form <old name>=<new name> to indecate the change.
+# Note if there is no new name the equal sign will be ignored.
+#
+# This is for package information.
+# Don't modify it!
+[/usr/local/lib/pkg.meta]
+dependency={pkg_name}.dependency
+fileslist={pkg_name}.fileslist
+pkg.meta={pkg_name}.pkg.meta
+
+# You can customize your package from here.
+[/usr/local/bin]
+gw
+sw

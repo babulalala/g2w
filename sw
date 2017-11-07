@@ -2,9 +2,12 @@
 #
 # Script: sw
 # Description:
-# Version: 4.1.4
-# Package Version: 4.1.1
-# Date: 2017.08.04
+# Version: 4.2.1
+# Package Version: 4.2.x
+# Date: 2017.10.27
+# Update:
+#	4.2.0	1. Add programmable completion feature.
+#	4.2.1	1. Correct some show_usage wording.
 # Author: Bob Chang
 # Tested: CentOS 6.x, Cygwin NT 6.1
 # Note:
@@ -247,35 +250,39 @@ show_usage() {
 	local version=`get_script_version`
 	local pkg_version=`get_pkg_version`
 
-cat<<here
+	cat<<here
 $script_full_name, v$version
 g2w package, $pkg_version
 
-Change and manage work directories
+Change and manage work directories.
 
-Usage: $script_full_name [-c|-d <tag>|-gf|-h|-V]
-
-tag	    composed of a-z, A-Z, 0-9 or _, can't start with digit,
-    at lest 1 to max 20 characters
+Usage: $script_full_name [-c|-d <tag>|-gf|-h|-r|-rb|-srb|-svo|-tag <tag>|
+			 -u <tag>|-V]
 
 Options
-N/A	    show tags info sorted by tag name
-.	    check if recent work directory is recorded in list
-tag	    save tag with current work directory path
--c        clean (delete) all tags in path list
--d tag    delete tag in path list
--gf	    get tag file name
--h        show this help
--r	    show tags info sorted by path
--rb	    roll back tag to last saved path
--srb	    show roll back info
--svo	    save tag info as shell variable only
--tag	    show tag info if it is in list
--u tag    show tags which pathes under this tag path
--V        show version
+N/A	Show tags info sorted by tag name.
+.	Check if recent work directory is recorded in tags list.
+tag	Tag name which value will be current work directory path.
+	Tag name is composed of a-z, A-Z, 0-9 or _, can't start with digit,
+	and at lest 1 to max 20 characters.
+-c      Clean up (delete) all tags in tags list.
+-d tag
+	Delete tag in tags list.
+-gf	Get tags file name. You may find tags file location in the end of the document.
+-h      Show this help.
+-r	Show tags info sorted by pathes.
+-rb	Roll back tag to last saved path.
+-srb    Show roll back info.
+-svo    Save tag info as shell variable only.
+-tag tag
+	Show tag info if it exists in tags list.
+-u tag
+	Show tags which pathes under this tag path.
+-V      Show this script version.
 
-Tag List
-The tag list is $tag_file
+TAGS LIST
+The tags list is a file contains information about tags.
+It is saved in user home, for current user $USER is $tag_file.
 
 EXAMPLE
 $script_full_name
@@ -712,7 +719,7 @@ get_roll_back_file() {
 # Function: get_tag_file
 # Description:
 #	- return full path of user's tag file
-# 	- if file doesn't exist, an empty file will be created
+# 	- If tag file doesn't exist, an empty file will be created.
 # Input: N/A
 # Output: full path of user's tag file
 #	  e.g /root/root.sw
@@ -780,7 +787,8 @@ get_tag_names_by_path() {
 # Function: get_tag_names
 # Description:
 #	- default in alphabetical order
-# Input: N/A # Output: sorted list of all tag names in tag list # Usage: get_tag_names
+# Input: N/A # Output: sorted list of all tag names in tag list
+# Usage: get_tag_names
 #	=> output tag name list
 #
 get_tag_names() {
@@ -1336,6 +1344,127 @@ unset_shell_variables() {
 
 	IFS=$IFS_ORG
 }
+
+## Auto Complete ##
+
+#sw
+#rules/examples:
+# CPW: complete cursor word (COMP_CWORD)
+#1. CPW1
+# $ sw <TAB>
+# -c <description>
+# -d <description>
+# .....
+#
+#2. CPW1
+# $ sw -<TAB>
+# -c <description>
+# -d <description>
+# .....
+#
+#3. CPW1
+# $ sw [^-]<TAB>
+# (nothing will be displayed)
+#
+#4. CPW2
+# $ sw -xxx <TAB>
+# (displays tags list)
+#
+#5. CPW2
+# $ sw <tag> <TAB>
+# (nothing will be displayed)
+# 
+_complete_tag_sw() {
+	local list=`get_tag_names`
+	#word being completed
+	local cur=$2
+	#word preceding $cur
+	local pre_cur=$3
+	local options="-c -d -gf -h -r -rb -srb -svo -tag -u -V"
+
+	COMPREPLY=()
+
+	case $COMP_CWORD in
+		1) if [ -z "$cur" ] || [[ "$cur" == -* ]] ;then
+			COMPREPLY=(`compgen -W "$options" -- $cur`)
+			return 0
+		   else
+			:	#display nothing
+			return 0
+		   fi
+		   ;;
+		2) if [[ "$pre_cur" == -* ]];then
+			COMPREPLY=(`compgen -W "$list" -- $cur`)
+			return 0
+		   else
+			:	#display nothing
+			return 0
+		   fi
+		   ;;
+		*) :;;		#default display nothing
+	esac
+}
+
+complete -F _complete_tag_sw sw
+
+#gw
+#rules/examples:
+# CPW: complete cursor word (COMP_CWORD)
+#1. CPW1
+# $ gw <TAB>
+# <tags list>
+#
+#2. CPW1
+# $ gw -<TAB>
+# -c <description>
+# -d <description>
+# .....
+#
+#3. CPW2
+# $ gw -xxx <TAB>
+# (displays tags list)
+#
+#4. CPW2
+# $ gw <tag> <TAB>
+# (nothing will be displayed)
+# 
+_complete_tag_gw() {
+	local list=`get_tag_names`
+	local cur=$2
+	local pre_cur=$3
+	#!!!options for gw are different from sw, will be correct after gw refactor!!!
+	local options="-c -d -gf -h -r -rb -srb -svo -tag -u -V"
+
+	COMPREPLY=()
+
+	case $COMP_CWORD in
+		1) if [ -z "$cur" ];then
+			COMPREPLY=(`compgen -W "$list" -- $cur`)
+			return 0
+		   fi
+		   if [[ "$cur" == -* ]];then
+			COMPREPLY=(`compgen -W "$options" -- $cur`)
+			return 0
+		   else
+			COMPREPLY=(`compgen -W "$list" -- $cur`)
+			return 0
+		   fi
+		   ;; 
+		2) if [[ "$pre_cur" == -* ]];then
+			COMPREPLY=(`compgen -W "$list" -- $cur`)
+			return 0
+		   else
+			:	#display nothing	
+			return 0
+		   fi
+		   ;;
+		*) :		#default display nothing
+		   return 0
+		   ;;
+	esac
+}
+
+complete -F _complete_tag_gw gw
 
 # main #
 main $@

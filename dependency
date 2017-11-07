@@ -1,0 +1,12 @@
+#
+# dependency
+#
+# <full path to filename>
+# Example:
+# /usr/loca/bin/filename1
+# /usr/local/lib/btools
+#
+
+# We also need files in this package.
+g2w.sh
+bash.bashrc

@@ -1,5 +1,27 @@
 g2w - Go to Work folder
 --------------------
+2017.11.01
+- Houston, we have a problem.
+Because sw and gw are soruced in shell so now we need to consider:
+1. Functions should not be allways refreshed when use sw and gw commands. So we need to seperate the shared functions as library (g2wlib) and source it when shell starts up.
+gw -> g2wlib -> . /usr/local/lib/g2wlib in shell start up script
+sw ->
+2. In order to keep shell namespace clean try possiblly to hide variables in function, otherwise unset them when script is terminated.
+
+2017.10.31
+*- add sw/gw auto complete function, (gw options need to be corrected after gw refactor)
+- refactor install script
+- refactor gw
+- After refator gw I can public this project (ya!). The following tasks are:
+-> arrange/clean up g2w folder
+-> write doc
+-> create introduce vedio (youtube)
+-> public it in topics of stackoverflow
+- sw -fnd lab =>
+lab	xxxx
+lab2	xxxx
+sunbird_lab	xxxx
+
 2017.08.07
 - need to refactor gw
 
@@ -9,7 +31,8 @@ g2w - Go to Work folder
 2017.08.03
 *- sw -u . => show under current path
 - need to refactor gw later
-- if tag doesn't exist, gw may show related info
+d- if tag doesn't exist, gw may show related info
+(2017.10.31 Don't need any more, because we have auto complete.)
 e.g.
 $ gw lab
 lab1		/xxx/eee/sss
