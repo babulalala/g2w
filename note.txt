@@ -1,5 +1,9 @@
 g2w - Go to Work folder
 --------------------
+2017.11.08
+- I think we need script to check integrity of .sw file.
+-> no white space
+
 2017.11.01
 - Houston, we have a problem.
 Because sw and gw are soruced in shell so now we need to consider:

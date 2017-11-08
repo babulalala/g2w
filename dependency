@@ -9,4 +9,5 @@
 
 # We also need files in this package.
 g2w.sh
-bash.bashrc
+g2wlib
+/etc/bash.bashrc

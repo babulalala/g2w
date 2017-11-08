@@ -2,19 +2,24 @@
 #
 # Script: install
 # Description: Install script for package.
-# Version: 1.1.3
-# Date: 2017.11.07
+# Version: 1.3.0
+# Date: 2017.11.08
 # Update:
 #	1.1.0	1. Refactor script.
 #		2. Use library btools.
 #		3. Add meta files to system for referance.
 #		4. Ignore file in fileslist function.
-#	1.1.1	1. Change dependency from btools to bfile.
+#	1.2.0	1. Change dependency from btools to bfile.
 #		2. Search bfile from package folder first, then system library.
-#	1.1.2	1. Fix can't find bfile bug.
+#		3. Refactor copy portion, source files can exist in package sub-folder.
+#	1.3.0	1. Add pre/post-install section
 # Note:
 #	- we need log system (1.2.0), when blog is ready.
+#	- *[section] ignore fucntion is not ready.
 #
+
+script_full_name=`basename $0`
+script_name=`basename $0 .sh`
 
 this_folder=`dirname $0`
 cd $this_folder
@@ -45,6 +50,32 @@ fileslist_file=$package_folder/$fileslist_file_name
 dependency_file_name=dependency
 dependency_file=$package_folder/$dependency_file_name
 
+## Functions ##
+
+#
+# Function: copy_file
+#
+copy_file() {
+	local old_folder=$1
+	local old_file_name=$2
+	local dst_folder=$3
+	local new_file_name=$4
+
+	if cp $old_folder/$old_file_name $dst_folder/$new_file_name &>/dev/null;then
+		echo ok
+		return 0
+	else
+		echo failed
+		return 1
+	fi
+}
+
+# Pre-installation #
+# Add your code here. #
+
+
+# End of Pre-installation #
+
 #rock'n roll
 echo "Start to install package $package_name."
 echo "Package folder is $package_folder."
@@ -60,12 +91,19 @@ fi
 
 echo "Start to install package:"
 
+#monitor installation
+install_failed=/tmp/$package_name.$script_name.failed
+#clean up
+rm $install_failed &>/dev/null
+
 filter_file "$fileslist_file" |while read file
 do
 
 	#clean up
-	unset new_file_name old_file_name
+	unset new_file_name old_file_name need_overwrite
 
+	#handle section header
+	#dump target folder path from section header ([/xxx/xxx])
 	if echo "$file" |grep '^\[.*\]$' &>/dev/null;then
 		dst_folder=`echo "$file"|sed 's/\[\|\]//g'`
 		if [ ! -d $dst_folder ];then
@@ -81,191 +119,198 @@ do
 		continue
 	fi
 
+	#handle file
 	#should we change the file name
 	#example:
-	# dependency={pkg_name}.dependency
+	# source/dependency={pkg_name}.dependency
 	if echo "$file" |grep '=' &>/dev/null;then		#yes, need to change
+		#e.g. source/dependency
 		old_file_name=`echo "$file"|cut -d '=' -f 1`
+
+		#e.g. {pkg_name}.dependency
 		new_file_name=`echo "$file"|cut -d '=' -f 2`
 
 		#substitution is needed
+		#e.g. pkg_name.dependency
 		new_file_name=`echo $new_file_name|sed "s/{pkg_name}/$package_name/g"`
 	fi
 
 	#prepare for copy
-	if [ -z $old_file_name ];then
+	if [ -z "$old_file_name" ];then		#case for filename or source/filename
 		old_file_name=$file
 	fi
 
-	if [ -z $new_file_name ];then
-		new_file_name=$old_file_name
+	#dump file name if old file name contains path?
+	#e.g. source/dependency
+	old_folder=`dirname "$old_file_name"`
+	old_file_name=`basename "$old_file_name"`
+
+	if [ -z "$new_file_name" ];then		#case for filename= or source/filename=
+		new_file_name="$old_file_name"
 	fi
 
-	echo -n "copy" $old_file_name "to $dst_folder as" $new_file_name ".... "
+	#change old_folder to absolute path
+	if [ "$old_folder" == '.' ];then
+		old_folder=$package_folder
+	fi
 
-	#don't overwrite the file starts with *
-	if echo "$file"|grep '^\*' &>/dev/null && [ -f $dst_folder/$new_file_name ];then	#file starts with *
-		echo "exists, no overwrite"
+	if grep '^/' &>/dev/null <<<$old_folder;then
+		:	#do nothing
+	else
+		old_folder=$package_folder/$old_folder
+	fi
+		
+	echo -n "copy" $old_folder/$old_file_name "to $dst_folder as" $new_file_name ".... "
+
+	#check if overwrite needed
+	if echo "$file"|grep '^\*' &>/dev/null && [ -f $dst_folder/$new_file_name ];then
+		echo "exists, no overwrite"	#file starts with * and exists in system
 		continue
 	fi
 
-	if cp $old_file_name $dst_folder/$new_file_name &>/dev/null;then
-		echo ok
-	else
-		echo failed
-	fi
+	#ok, fininally copy it
+	copy_file "$old_folder" "$old_file_name" "$dst_folder" "$new_file_name" || touch $install_failed
 done
 
 # Post-installation #
-# Add your script here.
+# Add your code here. #
 
-set_alias() {
-	#
-	echo -n "check OS .... "
-	local os=`uname -o`
-	echo $os
+#
+g2wlib_file=$package_folder/g2wlib
 
-	echo -n "check bash version .... "
-	local bash_version=`
-#SSSSSSSS
+#
+# Function: check_system
+# Description: Check OS and bash version.
+# Note: Currently the scripts run on bash, not tested on other shell/os.
+#	Modification only performed on demand.
+#
+check_system() {
+        #
+        echo -n "check OS .... "
+        local os=`uname -o`
+        echo $os
 
+        echo -n "check bash version .... "
+        local bash_version=`echo $BASH_VERSION`
+	echo $bash_version
+        #currently we do nothing with bash version because I don't know which version we don't support.
+	#If we know I'll use backlist here.
+	#white list:
+	#GNU bash¡Aª©¥» 4.4.12(3)-release (x86_64-unknown-cygwin)
+	#GNU bash, version 4.1.2(2)-release (x86_64-redhat-linux-gnu)
 
-	case $os in
-		Cygwin) set_alias_cygwin
-		;;
-		GNU/Linux) set_alias_centos
-		;;
-		Android) set_alias_android
-		;;
-		*) echo "Sorry, we don't support your system now."
-		   exit 0
-		;;
-	esac
-}	
+	if check_file_existance $g2wlib_file;then
+		:	#exists
+	else
+		echo "Failed, terminate the script."
+		exit 1
+	fi
+
+	#setup start up according to OS
+        case $os in
+                Cygwin) set_startup_cygwin
+                ;;
+                GNU/Linux) set_startup_linux
+                ;;
+                Android) set_alias_android
+                ;;
+                *) echo "Sorry, we don't support your system now."
+                   exit 0
+                ;;
+        esac
+}
+
+#
+# Fucntion: set_startup_cygwin
+# Note: 1. File /etc/bash.bashrc will be run when mintty is lunched. So we need
+#	to append g2wlib content to it.
+#	2. We don't check file existance here. If bash.bashrc file doesn't exist user have to
+#	fix this issue manually.
+#
+set_startup_cygwin() {
+        local login_script_name=bash.bashrc
+        local login_shell_folder=/etc
+        local login_script=$login_shell_folder/$login_script_name
+
+        local cmds=`cat <<here
+# g2w #
+alias sw='source sw'
+alias gw='source gw'
+sw -svo
+here
+`
+        local cmd
+	local line
+
+	#check if login script exists
+	OLD_IFS=$IFS
+	IFS="
+"
+
+	for cmd in $cmds
+	do
+		if grep "$cmd" $login_script &>/dev/null;then
+			:
+		else
+			echo -n "add $cmd to $login_script .... "
+			if echo "$cmd" >> $login_script;then
+				echo ok
+			else
+				echo failed		#continue process when failed
+							#may fix it manually later
+			fi
+		fi
+	done
+
+	IFS=$OLD_IFS
+
+	filter_file $g2wlib_file |while read line
+	do
+		if grep $line $login_script &>/dev/null;then
+			:
+		else
+			echo "$line" >> $login_script
+		fi
+	done
+}
+
+#
+# Function: set_startup_linux
+#
+set_startup_linux() {
+        local login_script_name=g2w.sh
+        local login_shell_folder=/etc/profile.d
+        local login_script=./$login_script_name
+        local cmd=
+
+        if [ -f $login_script ];then
+                echo -n "copy $login_script to $login_shell_folder ... "
+                cmd="cp $login_script $login_shell_folder"
+                check_result "$cmd"
+        else
+                echo "can't find $login_script"
+        fi
+}
+
+check_system
 
 
 # End of Post-installation #
 
+#summary
 echo
-echo "$package_name is installed."
 
-## End of Script ##
-
-# functions #
-set_alias_centos() {
-	local login_script_name=g2w.sh
-	local login_shell_folder=/etc/profile.d
-	local login_script=./$login_script_name
-	local cmd=
-
-	if [ -f $login_script ];then
-		echo -n "copy $login_script to $login_shell_folder ... "
-		cmd="cp $login_script $login_shell_folder"
-		check_result "$cmd"
-	else
-		echo "can't find $login_script"
-	fi
-}
-
-set_alias_cygwin() {
-	local login_script_name=bash.bashrc
-	local login_shell_folder=/etc
-	local login_script=$login_shell_folder/$login_script_name
-
-	local cmd1="alias sw='source sw'"
-	local cmd2="alias gw='source gw'"
-	local cmd3="sw -svo"
-
-	local cmd=
-
-	if [ -r $login_script ];then
-		grep "$cmd1" $login_script >/dev/null 2>&1
-		
-		if [ ! $? -eq 0 ];then
-			echo -n "add $cmd1 to $login_script .... "
-			cmd="echo \"$cmd1\" >> $login_script"
-			check_result "$cmd"
-		fi
-
-		grep "$cmd2" $login_script >/dev/null 2>&1
-
-		if [ ! $? -eq 0 ];then
-			echo -n "add $cmd2 to $login_script .... "
-			cmd="echo \"$cmd2\" >> $login_script"
-			check_result "$cmd"
-
-		fi
-
-		grep "$cmd3" $login_script >/dev/null 2>&1
-
-		if [ ! $? -eq 0 ];then
-			echo -n "add $cmd3 to $login_script .... "
-			cmd="echo \"$cmd3\" >> $login_script"
-			check_result "$cmd"
-
-		fi
-
-	else
-		echo 'alias sw="source sw"' >> $login_script
-		echo 'gw="source gw"' >> $login_script
-		echo 'sw -svo' >> $login_script
-	fi
-}
-
-show_messages() {
-	cat <<here
-
-Please re-login the terminal to affect the functions.
+if [ ! -f $install_failed ];then		#install not failed
+	echo "$package_name is installed."
+else
+	cat<<here
+$package_name is not installed completely.
+There is something wrong during the instalation process,
+Please check log <log where are you?> for details.
 here
+fi
 
-}
-
-check_source() {
-	echo -n "check source .... "
-
-	local file=
-
-	for file in $source_files
-	do
-		if [ ! -f $file ];then
-			echo lacks $file
-			exit 1
-		fi
-	done
-
-	echo ok
-
-}
-
-copy_files() {
-	echo -n "copy gw to $bin_folder .... "
-	local cmd="cp -f gw $bin_folder"
-	check_result "$cmd"
-
-	#
-	echo -n "copy sw to $bin_folder .... "
-	cmd="cp -f sw $bin_folder"
-	check_result "$cmd"
-}
-
-#
-main() {
-	cd `dirname $0`
-
-	# check source files in this folder
-	check_source
-
-	# copy files to destinations
-	copy_files
-	# set alias
-
-	set_alias
-
-	# show messasges
-	show_messages
-}
-
-# main #
-main
+#clean up
+rm $install_failed &>/dev/null
 
 ## End of Script ##
