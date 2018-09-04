@@ -1,13 +1,28 @@
 g2w - Go to Work folder
 --------------------
+2017.12.21
+- (Bug) When path of tag is not available cd in gw will prompt error message. This issue should be checked (by gw) and output "This tag is absolated".
+
+2017.11.09
+- (Bug) When first time install there is erro can't find <user>.sw file.
+- (Bug) sw -d doesn't work on Termux, I found sed doesn't work with /.\+/, it is shit when commands don't work the same.
+- need fix path issue about OSes
+
 2017.11.08
 - I think we need script to check integrity of .sw file.
 -> no white space
+- script install is not finish yet, encountered some issues.
+-> need function check_result in blib/bfile
+-> replace copy_files to bfile.check_result 
+-> finish check_system
+-> dependency may depends on package(local) files, need to handle this
+=> if local file remove it from meta file (should used during installation)
+... this is the problem, I should seperate files from for package anf for install, for installation they should not be included in any file (fileslist, dependency). Files should be check in pre/post-installation themselve.
 
 2017.11.01
 - Houston, we have a problem.
 Because sw and gw are soruced in shell so now we need to consider:
-1. Functions should not be allways refreshed when use sw and gw commands. So we need to seperate the shared functions as library (g2wlib) and source it when shell starts up.
+1. Functions should not be allways refreshed when use use sw or gw commands. So we need to seperate the shared functions as library (g2wlib) and source it when shell starts up.
 gw -> g2wlib -> . /usr/local/lib/g2wlib in shell start up script
 sw ->
 2. In order to keep shell namespace clean try possiblly to hide variables in function, otherwise unset them when script is terminated.

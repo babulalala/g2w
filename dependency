@@ -8,6 +8,3 @@
 #
 
 # We also need files in this package.
-g2w.sh
-g2wlib
-/etc/bash.bashrc

@@ -1,0 +1,3 @@
+- this will be error
+$ sw -r -u .
+

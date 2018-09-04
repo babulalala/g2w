@@ -160,23 +160,23 @@ do
 		old_folder=$package_folder/$old_folder
 	fi
 		
+## using check_result later????
+#check existance then decide copy or not
 	echo -n "copy" $old_folder/$old_file_name "to $dst_folder as" $new_file_name ".... "
 
 	#check if overwrite needed
+#use function check_file_existance
 	if echo "$file"|grep '^\*' &>/dev/null && [ -f $dst_folder/$new_file_name ];then
 		echo "exists, no overwrite"	#file starts with * and exists in system
 		continue
 	fi
 
-	#ok, fininally copy it
+	#ok, finally copy it
 	copy_file "$old_folder" "$old_file_name" "$dst_folder" "$new_file_name" || touch $install_failed
 done
 
 # Post-installation #
 # Add your code here. #
-
-#
-g2wlib_file=$package_folder/g2wlib
 
 #
 # Function: check_system
@@ -185,6 +185,9 @@ g2wlib_file=$package_folder/g2wlib
 #	Modification only performed on demand.
 #
 check_system() {
+	#
+	local g2wlib_file=$package_folder/g2wlib
+
         #
         echo -n "check OS .... "
         local os=`uname -o`
@@ -196,7 +199,7 @@ check_system() {
         #currently we do nothing with bash version because I don't know which version we don't support.
 	#If we know I'll use backlist here.
 	#white list:
-	#GNU bash¡Aª©¥» 4.4.12(3)-release (x86_64-unknown-cygwin)
+	#GNU bash, 4.4.12(3)-release (x86_64-unknown-cygwin)
 	#GNU bash, version 4.1.2(2)-release (x86_64-redhat-linux-gnu)
 
 	if check_file_existance $g2wlib_file;then
@@ -207,12 +210,20 @@ check_system() {
 	fi
 
 	#setup start up according to OS
+###
+# currently there are two kinds of ways for setup
+1. modify start up file i.e. add code in it
+e.g. Cygwin /etc/bash.bashrc (system start up)
+Android ~/.bashrc	(user start up because it is single user system)
+2. add script to start up folder
+e.g Linux
+.....
         case $os in
-                Cygwin) set_startup_cygwin
+                Cygwin) set_startup_add_code (???target file name)
                 ;;
-                GNU/Linux) set_startup_linux
+                GNU/Linux) set_startup_add_file (???target folder name)
                 ;;
-                Android) set_alias_android
+                Android) set_startup_add_code <target file name>
                 ;;
                 *) echo "Sorry, we don't support your system now."
                    exit 0
@@ -228,6 +239,9 @@ check_system() {
 #	fix this issue manually.
 #
 set_startup_cygwin() {
+	#
+	local g2wlib_file=$package_folder/g2wlib
+
         local login_script_name=bash.bashrc
         local login_shell_folder=/etc
         local login_script=$login_shell_folder/$login_script_name
@@ -256,8 +270,8 @@ here
 			if echo "$cmd" >> $login_script;then
 				echo ok
 			else
-				echo failed		#continue process when failed
-							#may fix it manually later
+				echo failed && touch $install_failed		#continue process when failed
+										#may fix it manually later
 			fi
 		fi
 	done
@@ -276,20 +290,32 @@ here
 
 #
 # Function: set_startup_linux
+# Note:	1. Copy g2wlib to /etc/profile.d.
 #
 set_startup_linux() {
-        local login_script_name=g2w.sh
+	local g2wlib_file=$package_folder/g2wlib
         local login_shell_folder=/etc/profile.d
-        local login_script=./$login_script_name
-        local cmd=
 
-        if [ -f $login_script ];then
-                echo -n "copy $login_script to $login_shell_folder ... "
-                cmd="cp $login_script $login_shell_folder"
-                check_result "$cmd"
+	echo -n "copy $g2wlib_file to $login_shell_folder ... "
+
+	#need to modify later using check_result function
+#use check_result later
+        if copy $g2wlib_file $login_shell_folder;then
+		echo ok
         else
-                echo "can't find $login_script"
+		echo failed && touch $install_failed		#continue process when failed
         fi
+}
+
+#
+# Function: set_startup_linux
+# Note: 1. Because Android (Termux) is single user system, we append setup 
+#	to ~/.bashrc file.
+#
+set_startup_android() {
+	local g2wlib_file=$package_folder/g2wlib
+        local login_shell_folder=/etc/profile.d
+
 }
 
 check_system
